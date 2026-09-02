@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+outputs/
+contact_sheets/
+failure_cases/outputs/
+portfolio/index.html

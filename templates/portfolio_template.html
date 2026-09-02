@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<style>
+  :root {
+    --bg: #0f1216;
+    --panel: #171b21;
+    --panel-2: #1e232b;
+    --border: #2a313c;
+    --text: #e8ecf1;
+    --text-dim: #9aa5b1;
+    --accent: #6ee7c9;
+    --accent-2: #7aa2ff;
+    --warn-bg: #2b2210;
+    --warn-border: #6b5220;
+    --warn-text: #f0d585;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px 80px; }
+
+  header.hero {
+    padding: 64px 28px 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(600px 300px at 20% -20%, rgba(110,231,201,0.12), transparent),
+      radial-gradient(600px 300px at 80% -20%, rgba(122,162,255,0.12), transparent);
+  }
+  header.hero h1 {
+    font-size: 2.4rem;
+    margin: 0 0 10px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.5px;
+  }
+  header.hero p.tagline { color: var(--text-dim); font-size: 1.05rem; margin: 0 auto; max-width: 640px; }
+  header.hero p.meta { color: var(--text-dim); font-size: 0.85rem; margin-top: 18px; }
+
+  section { margin-top: 56px; }
+  h2 {
+    font-size: 1.5rem;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 .num {
+    font-size: 0.85rem;
+    color: var(--bg);
+    background: var(--accent);
+    border-radius: 999px;
+    width: 26px; height: 26px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+  p.section-sub { color: var(--text-dim); margin: 0 0 24px; max-width: 760px; }
+
+  .commentary {
+    border: 1px dashed var(--border);
+    background: var(--panel-2);
+    color: var(--text-dim);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-top: 14px;
+  }
+  .commentary::before {
+    content: "✎ Commentary — fill in before presenting";
+    display: block;
+    font-style: normal;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .model-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .model-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .model-card .name { font-weight: 700; color: var(--accent); font-size: 0.95rem; margin-bottom: 6px; }
+  .model-card .desc { color: var(--text-dim); font-size: 0.85rem; }
+
+  .photo-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 28px;
+  }
+  .photo-card h3 { margin: 0 0 14px; font-size: 1.05rem; color: var(--text); }
+  .photo-card img.sheet { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); display: block; }
+
+  table.metrics { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.85rem; }
+  table.metrics th, table.metrics td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  table.metrics th { color: var(--text-dim); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.metrics td.model-name { color: var(--accent-2); font-weight: 600; }
+  .bar-track { background: var(--panel-2); border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+  .failure-card {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .failure-card h3 { margin: 0 0 8px; color: var(--warn-text); }
+  .failure-card p.note { color: var(--warn-text); opacity: 0.9; font-size: 0.9rem; max-width: 760px; }
+  .failure-card img.sheet { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--warn-border); margin-top: 12px; display: block; }
+
+  .empty-note {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  footer { margin-top: 70px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.8rem; text-align: center; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Vivid</h1>
+  <p class="tagline">Before/After Cartoonization Portfolio — pretrained AnimeGAN2 style variants applied to real photos, with objective metrics and deliberate failure cases for jury Q&amp;A.</p>
+  <p class="meta">Generated {{ generated_at }}</p>
+</header>
+
+<div class="wrap">
+
+  <section id="intro">
+    <h2><span class="num">1</span>Introduction</h2>
+    <p class="section-sub">
+      Vivid runs a set of pretrained, unpaired image-to-image translation models
+      over ordinary photos to produce anime/cartoon-styled outputs, without any
+      per-photo tuning. This page pairs every result with objective before/after
+      metrics rather than just visual impression.
+    </p>
+    <div class="commentary">
+      Placeholder — e.g. why you picked this project, what "cartoonization" means here,
+      and what the jury should look for as they scroll.
+    </div>
+  </section>
+
+  <section id="models">
+    <h2><span class="num">2</span>Model Variants Compared</h2>
+    <p class="section-sub">All variants share the same generator/discriminator architecture (see README) and differ only in the training checkpoint used.</p>
+    <div class="model-legend">
+      {% for m in models %}
+      <div class="model-card">
+        <div class="name">{{ m.name }}</div>
+        <div class="desc">{{ m.description }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section id="grid">
+    <h2><span class="num">3</span>Before / After Grid</h2>
+    <p class="section-sub">Original photo alongside every model's output, with SSIM, color-histogram shift and edge-density change against the original.</p>
+
+    {% if photos %}
+      {% for photo in photos %}
+      <div class="photo-card">
+        <h3>{{ photo.filename }}</h3>
+        {% if photo.sheet_src %}
+        <img class="sheet" src="{{ photo.sheet_src }}" alt="Contact sheet for {{ photo.filename }}">
+        {% endif %}
+        <table class="metrics">
+          <thead>
+            <tr><th>Model</th><th>SSIM vs original</th><th>Hist. shift</th><th>Edge density Δ</th></tr>
+          </thead>
+          <tbody>
+            {% for m in photo.models %}
+            <tr>
+              <td class="model-name">{{ m.name }}</td>
+              <td>{{ m.ssim }}</td>
+              <td>{{ m.hist_shift }}</td>
+              <td>{{ m.edge_change }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="commentary">
+          Placeholder — what stands out in this photo's result, and which variant you'd pick and why.
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-note">No photo outputs found yet. Run <code>python cartoonize.py</code> then <code>python compare.py</code>, then regenerate this page.</div>
+    {% endif %}
+  </section>
+
+  <section id="comparison">
+    <h2><span class="num">4</span>Model Comparison (Averaged)</h2>
+    <p class="section-sub">Per-model metrics averaged across every photo above — a quick numeric summary for the jury.</p>
+    {% if model_averages %}
+    <table class="metrics">
+      <thead>
+        <tr><th>Model</th><th>Avg. SSIM</th><th>Avg. hist. shift</th><th>Avg. edge density Δ</th><th>Photos</th></tr>
+      </thead>
+      <tbody>
+        {% for m in model_averages %}
+        <tr>
+          <td class="model-name">{{ m.name }}</td>
+          <td>
+            {{ m.ssim }}
+            <div class="bar-track"><div class="bar-fill" style="width: {{ (m.ssim * 100) | round(1) }}%"></div></div>
+          </td>
+          <td>
+            {{ m.hist_shift }}
+            <div class="bar-track"><div class="bar-fill" style="width: {{ (m.hist_shift * 100) | round(1) }}%"></div></div>
+          </td>
+          <td>{{ m.edge_change }}%</td>
+          <td>{{ m.n }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="commentary">
+      Placeholder — overall recommendation: which variant is the best default, and for which kind of photo.
+    </div>
+    {% else %}
+      <div class="empty-note">No metrics found yet — run <code>python compare.py</code> first.</div>
+    {% endif %}
+  </section>
+
+  <section id="failures">
+    <h2><span class="num">5</span>Failure Cases</h2>
+    <p class="section-sub">Deliberate stress tests: a face close-up and a fine-detail/busy-background photo, chosen to show the jury exactly where and why this class of model breaks down.</p>
+    {% if failure_cases %}
+      {% for fc in failure_cases %}
+      <div class="failure-card">
+        <h3>{{ fc.title }}</h3>
+        <p class="note">{{ fc.note }}</p>
+        <img class="sheet" src="{{ fc.sheet_src }}" alt="Failure case: {{ fc.title }}">
+        <div class="commentary">
+          Placeholder — what actually happened here, why (in generator/loss terms), and how you'd explain it in Q&amp;A.
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-note">No failure-case outputs found yet. Run <code>python failure_cases.py</code>, then regenerate this page.</div>
+    {% endif %}
+  </section>
+
+  <footer>
+    Vivid — Gen AI jury demo, built on pretrained AnimeGAN2 (bryandlee/animegan2-pytorch). See README.md for how it works and known limitations.
+  </footer>
+
+</div>
+</body>
+</html>
