@@ -1,8 +1,25 @@
+# environments
 venv/
+.venv/
+.venv*/
+
+# python caches
 __pycache__/
 *.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.cache/
+
+# generated / runtime
 outputs/
 contact_sheets/
+uploads/
 failure_cases/outputs/
 portfolio/index.html
+
+# downloaded model weights (fetch with: python tools/download_weights.py)
 weights/
+
+# local config
+.env

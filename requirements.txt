@@ -1,4 +1,4 @@
-# Vivid — pinned dependencies (CPU inference; swap torch/torchvision for a CUDA build if you have a GPU)
+# Vivid: pinned dependencies (CPU inference; swap torch/torchvision for a CUDA build if you have a GPU)
 torch==2.4.1
 torchvision==0.19.1
 numpy==1.26.4
@@ -7,10 +7,10 @@ opencv-python==4.10.0.84
 scikit-image==0.24.0
 tqdm==4.66.5
 Jinja2==3.1.4
-gradio==4.44.1
-# gradio 4.44.1 imports HfFolder (removed in huggingface_hub 1.0) and breaks on newer fastapi/starlette/pydantic
-huggingface_hub==0.25.2
+onnxruntime==1.31.1
+# web app (server.py)
 fastapi==0.112.2
 starlette==0.38.6
 pydantic==2.8.2
-onnxruntime==1.31.1
+uvicorn==0.54.0
+python-multipart==0.0.34
