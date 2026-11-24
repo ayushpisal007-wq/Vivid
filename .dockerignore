@@ -1,0 +1,33 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+
+# environments
+venv/
+.venv/
+.venv*/
+
+# caches
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.cache/
+
+# generated, or downloaded inside the image
+weights/
+outputs/
+contact_sheets/
+uploads/
+failure_cases/outputs/
+portfolio/
+
+# not needed at runtime
+docs/
+tests/
+deploy/
+*.md
+requirements-dev.txt
+.env

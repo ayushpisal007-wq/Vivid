@@ -40,6 +40,19 @@ CACHE_SIZE = 32  # raw model outputs kept, so moving the intensity slider never 
 Runner = Callable[[Image.Image], Image.Image]
 
 
+def cpu_budget() -> int:
+    """CPUs this process may really use. Inside a container os.cpu_count() can report the whole host."""
+    count = os.cpu_count() or 4
+    try:
+        quota, period = open("/sys/fs/cgroup/cpu.max").read().split()
+        if quota != "max":
+            count = min(count, max(1, round(int(quota) / int(period))))
+    except (OSError, ValueError):
+        pass  # not Linux, or no limit set
+    cores = os.environ.get("CPU_CORES", "")  # set by Hugging Face Spaces
+    return min(count, max(1, int(cores))) if cores.isdigit() else count
+
+
 # ---------------------------------------------------------------- loaders
 
 def _to_tensor(image: Image.Image, device: torch.device) -> torch.Tensor:
@@ -54,7 +67,7 @@ def _to_image(y: torch.Tensor) -> Image.Image:
 
 def load_hub_generator() -> torch.nn.Module:
     """AnimeGANv2 network definition from torch.hub, without weights."""
-    return torch.hub.load(HUB_REPO, "generator", pretrained=False, trust_repo=True, verbose=False)
+    return torch.hub.load(HUB_REPO, "generator", pretrained=False, trust_repo=True, skip_validation=True, verbose=False)
 
 
 def _animegan2(filename: str) -> Callable[[torch.device], Runner]:
@@ -69,7 +82,8 @@ def _animegan2(filename: str) -> Callable[[torch.device], Runner]:
 def _animegan3(name: str) -> Callable[[torch.device], Runner]:
     def load(device):
         ensure(ONNX_VARIANTS[name][0])
-        return OnnxCartoonModel(name).run
+        limit = cpu_budget()
+        return OnnxCartoonModel(name, threads=limit if limit < (os.cpu_count() or 4) else 0).run
     return load
 
 
@@ -171,7 +185,7 @@ class Registry:
         if unknown:
             raise ValueError(f"Unknown styles: {', '.join(sorted(unknown))}")
         self.device = get_device(device)
-        torch.set_num_threads(os.cpu_count() or 4)  # hyperthreads + channels_last: ~20% faster on CPU here
+        torch.set_num_threads(cpu_budget())  # hyperthreads + channels_last: ~20% faster on CPU here
         self.styles: dict[str, Style] = {}
         self.unavailable: dict[str, str] = {}
         self._runners: dict[str, Runner] = {}

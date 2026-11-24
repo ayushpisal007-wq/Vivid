@@ -156,6 +156,8 @@ export function studio(styles, showcaseData) {
 
   /* ---------- cartoonize ---------- */
   function estimate(id) {
+    // The timings were measured on the laptop, so only quote them there.
+    if (!["localhost", "127.0.0.1"].includes(location.hostname)) return "";
     const runs = showcaseData?.photos
       .filter((p) => p.kind === "example" && p.outputs[id])
       .map((p) => p.outputs[id].metrics.inference_ms) ?? [];

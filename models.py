@@ -83,7 +83,7 @@ WEIGHTS_DIR = Path(__file__).parent / "weights"
 class OnnxCartoonModel:
     """One AnimeGANv3 ONNX generator, downloaded to weights/ on first use."""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, threads: int = 0):  # 0 lets ONNX Runtime choose
         import onnxruntime as ort
 
         filename, self.description = ONNX_VARIANTS[name]
@@ -92,7 +92,9 @@ class OnnxCartoonModel:
         if not path.exists():
             WEIGHTS_DIR.mkdir(exist_ok=True)
             torch.hub.download_url_to_file(f"{ONNX_RELEASE}/{filename}", str(path))
-        self.session = ort.InferenceSession(str(path), providers=["CPUExecutionProvider"])
+        options = ort.SessionOptions()
+        options.intra_op_num_threads = threads
+        self.session = ort.InferenceSession(str(path), options, providers=["CPUExecutionProvider"])
         self.input_name = self.session.get_inputs()[0].name
 
     def run(self, image: Image.Image) -> Image.Image:

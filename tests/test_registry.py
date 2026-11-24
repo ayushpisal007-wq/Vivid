@@ -117,3 +117,11 @@ def test_tampered_download_is_rejected(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError):
         weight_store.ensure("x.pt", log=lambda m: None)
     assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize("value, expected", [("1", 1), ("0", 1), ("9999", None), ("", None), ("abc", None)])
+def test_cpu_budget_respects_the_container_limit(monkeypatch, value, expected):
+    monkeypatch.delenv("CPU_CORES", raising=False)
+    unlimited = reg.cpu_budget()
+    monkeypatch.setenv("CPU_CORES", value)
+    assert reg.cpu_budget() == (expected or unlimited)
