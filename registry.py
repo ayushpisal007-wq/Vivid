@@ -9,10 +9,12 @@ The batch scripts (cartoonize.py etc.) keep using models.py directly and don't t
 """
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import threading
 import time
+from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -33,6 +35,7 @@ MIN_SIDE = 512   # these networks see almost nothing in tiny inputs, so upscale 
 CARTOONGAN_SIDE = 512  # upstream runs it at ~450px; at 896px it is ~3x slower
 MULTIPLE = 32
 FILTER_STYLE = "classic_filter"
+CACHE_SIZE = 32  # raw model outputs kept, so moving the intensity slider never re-runs a network
 
 Runner = Callable[[Image.Image], Image.Image]
 
@@ -157,7 +160,8 @@ class Result:
     style: str
     original: Image.Image  # preprocessed input, same size as `image`
     image: Image.Image
-    inference_ms: float
+    inference_ms: float  # time the network took, even when this result came from the cache
+    cached: bool
     metrics: dict
 
 
@@ -172,6 +176,7 @@ class Registry:
         self.unavailable: dict[str, str] = {}
         self._runners: dict[str, Runner] = {}
         self._lock = threading.Lock()  # one inference at a time keeps timings honest and memory bounded
+        self._cache: OrderedDict[tuple, tuple[Image.Image, float]] = OrderedDict()
         for style in STYLES:
             if only is None or style.id in only:
                 self._load(style)
@@ -191,15 +196,24 @@ class Registry:
         self.styles[style.id] = style
         self._runners[style.id] = runner
 
-    def stylize(self, image: Image.Image, style: str) -> tuple[Image.Image, float]:
-        """Raw model output for an already preprocessed image, plus inference time in ms."""
+    def stylize(self, image: Image.Image, style: str) -> tuple[Image.Image, float, bool]:
+        """Raw model output for an already preprocessed image, inference time in ms, and cache hit."""
         if style not in self._runners:
             raise KeyError(f"Unknown style '{style}'")
+        key = (style, image.size, hashlib.sha256(image.tobytes()).digest())
         with self._lock, torch.inference_mode():
+            if key in self._cache:
+                self._cache.move_to_end(key)
+                return *self._cache[key], True
             start = time.perf_counter()
             out = self._runners[style](image)
             ms = (time.perf_counter() - start) * 1000
-        return (out if out.size == image.size else out.resize(image.size, Image.LANCZOS)), ms
+            if out.size != image.size:
+                out = out.resize(image.size, Image.LANCZOS)
+            self._cache[key] = (out, ms)
+            if len(self._cache) > CACHE_SIZE:
+                self._cache.popitem(last=False)
+        return out, ms, False
 
     def run(
         self,
@@ -212,8 +226,8 @@ class Registry:
         if style not in self.styles:
             raise KeyError(f"Unknown style '{style}'")
         original = preprocess(image, min(max_side, self.styles[style].max_side))
-        out, ms = self.stylize(original, style)
+        out, ms, cached = self.stylize(original, style)
         out = postprocess(original, out, intensity, color_pop)
         # Metrics describe the image the user sees, after intensity and color pop.
         scores = metrics.compute_all(original, out) | {"inference_ms": round(ms, 1)}
-        return Result(style, original, out, ms, scores)
+        return Result(style, original, out, ms, cached, scores)

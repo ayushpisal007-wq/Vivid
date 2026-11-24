@@ -44,6 +44,17 @@ def test_cartoongan_runs_at_its_reference_size(registry):
         assert max(registry.run(im, "cartoongan_hayao").image.size) == reg.CARTOONGAN_SIDE
 
 
+def test_repeat_run_uses_cache_and_stays_correct(registry):
+    with Image.open(PORTRAIT) as im:
+        first = registry.run(im, "hayao_v3", max_side=256)
+        again = registry.run(im, "hayao_v3", max_side=256)
+        half = registry.run(im, "hayao_v3", intensity=50, max_side=256)
+    assert again.cached and half.cached
+    assert again.image.tobytes() == first.image.tobytes()
+    assert half.image.tobytes() != first.image.tobytes()
+    assert half.inference_ms == first.inference_ms
+
+
 def test_unknown_style(registry):
     with pytest.raises(KeyError):
         registry.run(Image.new("RGB", (64, 64)), "nope")

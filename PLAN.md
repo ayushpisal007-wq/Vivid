@@ -18,7 +18,7 @@ The design spec lives in [DESIGN.md](DESIGN.md).
 
 - [x] Phase 0: Repo cleanup
 - [x] Phase 1: Model registry
-- [ ] Phase 2: API
+- [x] Phase 2: API
 - [ ] Phase 3: Frontend
 - [ ] Phase 4: Jury content
 - [ ] Final pass: test every style via the UI, screenshots, summary
@@ -120,3 +120,16 @@ All 11 styles load and pass tests: 4 AnimeGANv2, 2 AnimeGANv3, 4 CartoonGAN, 1 c
   5 s at 512x512) and must be corrected. inputs/sample_street.jpg is actually a lioness.
 - Licences to state in README: animegan2-pytorch is MIT; AnimeGANv3 is non-commercial/academic;
   comixify is CC BY-NC 4.0. Fine for a jury project, not for commercial use.
+
+### Phase 2 (done)
+
+- server.py: the API plus static files from frontend/ (a placeholder page until Phase 3). HOST
+  defaults to 127.0.0.1; the Docker image must set HOST=0.0.0.0.
+- Images come back as data URLs inside the JSON: PNG for cartoonize, JPEG for compare. Every error
+  is {"detail": "<plain sentence>"}.
+- Added beyond the spec: the registry caches raw model outputs, so intensity and color-pop changes
+  take under a second, and /api/cartoonize accepts max_side (256-1024).
+- /api/compare runs at 512px and takes about 50 s here (CartoonGAN is about 30 s of that). It stops
+  when the client disconnects. For Phase 3, call /api/cartoonize once per style with max_side=512
+  so the grid fills in as results arrive instead of showing nothing for 50 s.
+- One inference runs at a time, so a request made during a compare waits for the current style.
