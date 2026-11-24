@@ -21,7 +21,7 @@ The design spec lives in [DESIGN.md](DESIGN.md).
 - [x] Phase 2: API
 - [x] Phase 3: Frontend
 - [x] Phase 4: Jury content
-- [ ] Final pass: test every style via the UI, screenshots, summary
+- [x] Final pass: test every style via the UI, screenshots, summary
 
 ## Phase 0: Repo cleanup
 
@@ -153,3 +153,20 @@ All 11 styles load and pass tests: 4 AnimeGANv2, 2 AnimeGANv3, 4 CartoonGAN, 1 c
   The site already says CartoonGAN. The style loss is AnimeGAN's addition.
 - Edge change can look extreme on smooth photos (Hayao on the portrait: +1206%) because the original
   has almost no edges. Worth a sentence in the commentary.
+
+### Phase 4 and final pass (done)
+
+- Portfolio: commentary per photo, averaged metrics table, reading guide and recommendation. Limits:
+  what happened and why, per case. Text lives in frontend/js/commentary.js; numbers come from
+  showcase.json. The offline portfolio (portfolio.py) has real commentary too. A test fails if any
+  placeholder text comes back.
+- Fixed in the batch scripts: compare.py and failure_cases.py scored a square-cropped output against
+  the whole photo squashed into a square, so SSIM was too low (Paprika portrait 0.63, now 0.78).
+- Corrected claims: celeba_distill is not "lighter" and not trained like AnimeGAN (renamed Cel
+  Shade); the edge-promoting loss is CartoonGAN's; CPU speed is seconds, not milliseconds.
+- CartoonGAN Hosoda was also compared with published samples and matches closely.
+- Every style was run through the UI on the portrait and the landscape: 22 of 22 fine. The app also
+  starts with the network blocked, so the demo works offline.
+- Nothing fell back: all planned model families are in. The CartoonGAN weights come from a mirror.
+- Not done: no Dockerfile or deployment, so the README's live link is still a placeholder to fill in.
+- Screenshots are JPEG in docs/screenshots (4 MB instead of 14 MB as PNG).

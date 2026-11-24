@@ -6,7 +6,7 @@ Final Gen AI project, Topic 128: Cartoonize Photos with AnimeGAN / CartoonGAN.
 
 **Live demo:** _link coming soon_ <!-- TODO: paste the deployed URL here -->
 
-![Vivid hero](docs/screenshots/01-hero.png)
+![Vivid hero](docs/screenshots/01-hero.jpg)
 
 Vivid runs 10 pretrained GAN styles and one classic filter with no AI over your photo, shows before
 and after, measures what changed, and shows where the models fail.
