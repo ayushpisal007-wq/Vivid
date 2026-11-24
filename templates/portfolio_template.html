@@ -78,7 +78,7 @@
     margin-top: 14px;
   }
   .commentary::before {
-    content: "✎ Commentary — fill in before presenting";
+    content: "Commentary";
     display: block;
     font-style: normal;
     font-size: 0.72rem;
@@ -156,14 +156,16 @@
       metrics rather than just visual impression.
     </p>
     <div class="commentary">
-      Placeholder — e.g. why you picked this project, what "cartoonization" means here,
-      and what the jury should look for as they scroll.
+      Cartoonizing means redrawing a photo as if it came from an anime film: flat colours,
+      clean lines, the same scene. No one has drawn the cartoon twin of every photo, so these
+      networks learned from two separate piles, real photos and real cartoons. As you scroll,
+      ask two things of each result: is it still the same scene, and does it look drawn?
     </div>
   </section>
 
   <section id="models">
     <h2><span class="num">2</span>Model Variants Compared</h2>
-    <p class="section-sub">All variants share the same generator/discriminator architecture (see README) and differ only in the training checkpoint used.</p>
+    <p class="section-sub">All three use the same generator network. They differ in what they were trained on, and not all were trained the same way (see README).</p>
     <div class="model-legend">
       {% for m in models %}
       <div class="model-card">
@@ -200,9 +202,7 @@
             {% endfor %}
           </tbody>
         </table>
-        <div class="commentary">
-          Placeholder — what stands out in this photo's result, and which variant you'd pick and why.
-        </div>
+        {% if photo.note %}<div class="commentary">{{ photo.note }}</div>{% endif %}
       </div>
       {% endfor %}
     {% else %}
@@ -237,7 +237,10 @@
       </tbody>
     </table>
     <div class="commentary">
-      Placeholder — overall recommendation: which variant is the best default, and for which kind of photo.
+      For faces, face_paint_v2. For scenery that must stay recognisable, paprika. For a bold comic
+      look, celeba_distill. The numbers don't rank them: a low SSIM or a high histogram shift only
+      means the photo changed more, which is the point of a cartoon. This is a handful of photos,
+      so treat the averages as a sanity check, not a benchmark.
     </div>
     {% else %}
       <div class="empty-note">No metrics found yet — run <code>python compare.py</code> first.</div>
@@ -254,7 +257,7 @@
         <p class="note">{{ fc.note }}</p>
         <img class="sheet" src="{{ fc.sheet_src }}" alt="Failure case: {{ fc.title }}">
         <div class="commentary">
-          Placeholder — what actually happened here, why (in generator/loss terms), and how you'd explain it in Q&amp;A.
+          {{ fc.why }}
         </div>
       </div>
       {% endfor %}

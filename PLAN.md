@@ -20,7 +20,7 @@ The design spec lives in [DESIGN.md](DESIGN.md).
 - [x] Phase 1: Model registry
 - [x] Phase 2: API
 - [x] Phase 3: Frontend
-- [ ] Phase 4: Jury content
+- [x] Phase 4: Jury content
 - [ ] Final pass: test every style via the UI, screenshots, summary
 
 ## Phase 0: Repo cleanup

@@ -55,6 +55,22 @@ def compute_edge_density_change(original: Image.Image, output: Image.Image) -> f
     return (p_density - o_density) / o_density
 
 
+def crop_like(original: Image.Image, output: Image.Image) -> Image.Image:
+    """Centre-crop `original` to the output's aspect ratio.
+
+    face2paint (used by the batch scripts) centre-crops to a square. Scoring its output against the
+    whole photo squashed into a square would compare two different pictures.
+    """
+    w, h = original.size
+    target = output.width / output.height
+    if w / h > target:
+        cw, ch = round(h * target), h
+    else:
+        cw, ch = w, round(w / target)
+    left, top = (w - cw) // 2, (h - ch) // 2
+    return original.crop((left, top, left + cw, top + ch))
+
+
 def compute_all(original: Image.Image, output: Image.Image) -> dict:
     return {
         "ssim": round(compute_ssim(original, output), 4),

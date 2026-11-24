@@ -26,10 +26,10 @@
   },
   {
    "id": "celeba_distill",
-   "name": "Soft Distill",
+   "name": "Cel Shade",
    "family": "AnimeGAN",
    "source": "AnimeGANv2 (bryandlee, PyTorch)",
-   "description": "Lighter distilled checkpoint with a softer, subtler finish.",
+   "description": "Webtoon-like shading: flat skin, bold outlines, heavy black shadows.",
    "max_side": 1024
   },
   {

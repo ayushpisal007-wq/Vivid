@@ -18,23 +18,22 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 from compare import _font, build_contact_sheet
-from metrics import compute_all
+from metrics import compute_all, crop_like
 from models import MODEL_VARIANTS, get_device, load_models
 
 # filename in failure_cases/inputs/ -> (display title, jury talking-point note)
 CASES = {
     "face_closeup.jpg": (
         "Face close-up",
-        "Watch the eyes, mouth corners and skin shading. These models were "
-        "trained mostly on faces, but at close range you'll often see waxy "
-        "skin, shifted eye shape, or asymmetric warping the source photo "
-        "doesn't have.",
+        "Watch the eyes, brows and skin. face_paint_v2 sharpens eyes and brows "
+        "that were never sharp in this 128 px photo, paprika adds cracks and "
+        "hard shadows, and celeba_distill irons the skin flat.",
     ),
     "busy_background.jpg": (
         "Busy / fine-detail background",
-        "Watch foliage, hair strands and repeated textures. The generator "
-        "tends to flatten or smear high-frequency detail into blotchy "
-        "regions instead of preserving individual leaves or strands.",
+        "Watch the trees. face_paint_v2 smears leaves into soft blobs and "
+        "celeba_distill fills them with a repeating pattern. paprika keeps "
+        "the most detail here because it changes the photo least.",
     ),
 }
 
@@ -98,7 +97,7 @@ def main():
 
         print(f"\n{title} ({filename})")
         for name, out_img in model_outputs.items():
-            m = compute_all(img, out_img)
+            m = compute_all(crop_like(img, out_img), out_img)
             print(
                 f"  {name:16s} ssim={m['ssim']:.3f} hist_shift={m['hist_shift']:.3f} "
                 f"edge_change={m['edge_density_change_pct']:+.1f}%"

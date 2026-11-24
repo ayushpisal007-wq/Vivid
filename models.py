@@ -31,7 +31,7 @@ MODEL_VARIANTS = {
     ),
     "celeba_distill": (
         "celeba_distill",
-        "Lighter distilled checkpoint, softer and subtler stylization",
+        "Webtoon-like cel shading: flat skin, bold outlines, heavy shadows",
     ),
 }
 

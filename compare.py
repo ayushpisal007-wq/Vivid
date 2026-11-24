@@ -20,7 +20,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from metrics import compute_all
+from metrics import compute_all, crop_like
 from models import MODEL_VARIANTS, get_device, load_models
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
@@ -124,7 +124,7 @@ def main():
 
         original = Image.open(image_path).convert("RGB")
         for name, out_img in model_outputs.items():
-            m = compute_all(original, out_img)
+            m = compute_all(crop_like(original, out_img), out_img)
             m.update(image=image_path.name, model=name)
             metrics_rows.append(m)
             print(

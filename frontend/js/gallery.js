@@ -1,4 +1,5 @@
-import { $, el, beforeAfter, renderMetrics, reveal, seconds } from "./util.js";
+import { $, el, beforeAfter, renderMetrics, reveal, seconds, signed } from "./util.js";
+import { PHOTO_NOTES, LIMITS, averageNotes } from "./commentary.js";
 
 function openLightbox(photo, style) {
   const out = photo.outputs[style.id];
@@ -34,6 +35,16 @@ export function portfolio(data) {
   function show(photo) {
     tabs.forEach((t, i) => t.setAttribute("aria-pressed", String(photos[i] === photo)));
     const ar = `${photo.original.w / photo.original.h}`;
+    const note = PHOTO_NOTES[photo.id];
+    const pick = note && data.styles.find((s) => s.id === note.pick && photo.outputs[s.id]);
+    $("pf-note").hidden = !note;
+    if (note) {
+      $("pf-note").replaceChildren(
+        el("p", {}, note.look),
+        el("p", {}, note.but),
+        pick && el("p", { class: "pf-pick" }, el("span", { class: "label" }, "Our pick"),
+          el("button", { type: "button", class: "btn btn-line btn-small", onclick: () => openLightbox(photo, pick) }, pick.name)));
+    }
     grid.replaceChildren(
       tile(photo.original, ar, "Original", "photo"),
       ...data.styles.filter((s) => photo.outputs[s.id]).map((s) => {
@@ -42,6 +53,27 @@ export function portfolio(data) {
       }));
   }
   show(photos[0]);
+  averages(data, photos);
+}
+
+function averages(data, photos) {
+  const rows = data.styles.map((style) => {
+    const m = photos.filter((p) => p.outputs[style.id]).map((p) => p.outputs[style.id].metrics);
+    const avg = (key) => m.reduce((sum, x) => sum + x[key], 0) / m.length;
+    return { style, ssim: avg("ssim"), hist: avg("hist_shift"), edge: avg("edge_density_change_pct"), ms: avg("inference_ms") };
+  });
+  const bar = (v) => el("td", { class: "mono" }, v.toFixed(2),
+    el("span", { class: "bar" }, el("i", { style: { width: `${Math.min(100, v * 100)}%` } })));
+  $("avg-basis").textContent = `Average of ${photos.length} photos: ${photos.map((p) => p.name).join(", ")}`;
+  $("avg-table").replaceChildren(
+    el("thead", {}, el("tr", {}, ...["Style", "Family", "SSIM", "Hist shift", "Edge Δ", "Time"].map((h) => el("th", { scope: "col" }, h)))),
+    el("tbody", {}, ...rows.map((r) => el("tr", {},
+      el("th", { scope: "row" }, r.style.name),
+      el("td", { class: "mono" }, r.style.family),
+      bar(r.ssim), bar(r.hist),
+      el("td", { class: "mono" }, signed(r.edge)),
+      el("td", { class: "mono" }, seconds(r.ms))))));
+  $("avg-notes").replaceChildren(...averageNotes(rows).map((n) => el("div", {}, el("h4", {}, n.title), el("p", {}, n.text))));
 }
 
 export function limits(data) {
@@ -68,25 +100,28 @@ export function limits(data) {
     {
       n: "06 ▸ 6A",
       title: "Faces",
-      text: "Skin can crack, eyes can warp and tones can drift. These models learned from a narrow range of faces, so close-ups and hard light push them outside what they know.",
+      text: [LIMITS.faces.what, LIMITS.faces.why],
       media: [
         slider("sample_portrait", "paprika", "Paprika invents cracks on smooth, brightly lit skin."),
-        slider("face_closeup", "face_paint_v2", "A tiny 128 px close-up. Detail that isn't there gets made up."),
+        slider("face_closeup", "face_paint_v2", "A 128 px close-up. Portrait makes up the missing detail."),
       ],
     },
     {
       n: "07 ▸ 7A",
       title: "Fine detail",
-      text: "Cartoons are flat shapes with clean lines, so training rewards exactly that. Leaves, hair and texture get smeared into blotches. It is a side effect of the goal, not a bug.",
+      text: [LIMITS.detail.what, LIMITS.detail.why],
       media: [
-        slider("busy_background", "face_paint_v1", "Busy texture, Portrait Classic."),
-        slider("busy_background", "celeba_distill", "Busy texture, Soft Distill."),
+        slider("busy_background", "face_paint_v1", "Portrait Classic: the forest becomes haze."),
+        slider("busy_background", "celeba_distill", "Cel Shade: leaves become a dotted pattern."),
       ],
     },
     f && {
       n: "08 ▸ 8A",
       title: "Temporal flicker",
-      text: `Every image is drawn from scratch, with no memory of the last one. Here the same photo moved ${f.shift} pixels, like two video frames. Lined up again, ${f.changed_pct}% of pixels still differ by more than 3%. In a video, that is flicker.`,
+      text: [
+        `Here the same photo moved ${f.shift} pixels, like two video frames. Lined up again, the inputs are identical, but ${f.changed_pct}% of the output pixels still differ by more than 3%. In a video, that is flicker.`,
+        LIMITS.flicker.why,
+      ],
       media: [still(f.a, "Frame 1"), still(f.b, `Frame 2, moved ${f.shift} px`), still(f.diff, "Difference, brightened ×4")],
       three: true,
     },
@@ -94,7 +129,7 @@ export function limits(data) {
 
   for (const it of items) {
     const row = el("article", { class: "limit reveal" },
-      el("div", {}, el("p", { class: "mono" }, it.n), el("h3", {}, it.title), el("p", {}, it.text)),
+      el("div", {}, el("p", { class: "mono" }, it.n), el("h3", {}, it.title), ...it.text.map((t) => el("p", {}, t))),
       el("div", { class: it.three ? "limit-media three" : "limit-media" }, ...it.media.filter(Boolean)));
     $("limit-list").append(row);
     reveal(row);

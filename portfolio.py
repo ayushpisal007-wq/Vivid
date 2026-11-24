@@ -3,8 +3,9 @@
 
 Run after cartoonize.py and compare.py (and, ideally, failure_cases.py).
 Produces portfolio/index.html: intro, before/after grid per photo, model
-comparison table, failure-case section, and placeholder commentary blocks
-you fill in before presenting.
+comparison table, failure-case section, and commentary.
+
+The website (python server.py) is the main demo; this page is the offline version.
 
 Usage:
     python portfolio.py
@@ -24,21 +25,44 @@ from models import MODEL_VARIANTS
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
-# failure_cases/inputs/{key}.jpg -> (display title, jury talking-point note)
-# kept in sync with failure_cases.py's CASES dict
+# failure_cases/inputs/{key}.jpg -> (display title, what to watch, what happened and why)
 FAILURE_CASE_META = {
     "face_closeup": (
         "Face close-up",
-        "Watch the eyes, mouth corners and skin shading. These models were "
-        "trained mostly on faces, but at close range you'll often see waxy "
-        "skin, shifted eye shape, or asymmetric warping the source photo "
-        "doesn't have.",
+        "Watch the eyes, brows and skin.",
+        "face_paint_v2 sharpens eyes and brows that were never sharp in this 128 px photo, so "
+        "the person changes a little. paprika adds cracks and hard shadows. celeba_distill irons "
+        "the skin flat. Why: the models only know faces like the ones they were trained on. "
+        "Low resolution and close range push them outside that, so they fill the gap with "
+        "what they learned.",
     ),
     "busy_background": (
         "Busy / fine-detail background",
-        "Watch foliage, hair strands and repeated textures. The generator "
-        "tends to flatten or smear high-frequency detail into blotchy "
-        "regions instead of preserving individual leaves or strands.",
+        "Watch the trees.",
+        "face_paint_v2 smears leaves into soft blobs and celeba_distill fills them with a repeating "
+        "pattern. Why: cartoons are flat shapes with clean lines, so the adversarial and style "
+        "losses reward exactly that. Leaves don't fit, so they get flattened. It is a side "
+        "effect of the goal, not a bug.",
+    ),
+}
+
+# input filename -> spoken commentary; photos without an entry simply show no commentary block
+PHOTO_NOTES = {
+    "sample_landscape.jpg": (
+        "paprika stays closest to the photo and mostly shifts the colours. face_paint_v2 turns the "
+        "rock into brush strokes and the water to teal. celeba_distill gives the strongest drawn "
+        "look, with black outlines, but scribbles over the fine rock texture. Our pick here is "
+        "celeba_distill for style, or paprika if the scene must stay recognisable."
+    ),
+    "sample_portrait.jpg": (
+        "face_paint_v2 is the clear pick: it was trained on faces, redraws the eyes cleanly and "
+        "brightens the skin. celeba_distill goes full comic with heavy shadows. paprika fails here: "
+        "it draws cracks across the bright forehead, and we keep that result in on purpose."
+    ),
+    "sample_street.jpg": (
+        "A lioness, so a subject none of the face models expected. face_paint_v2 handles it best and "
+        "paints the fur as soft shapes. paprika mainly cools the colours. celeba_distill pushes the "
+        "shadows to black and scribbles on the fur."
     ),
 }
 
@@ -108,6 +132,7 @@ def main():
                     "original_src": rel(image_path, out_dir),
                     "sheet_src": rel(sheet, out_dir) if sheet.exists() else None,
                     "models": per_model,
+                    "note": PHOTO_NOTES.get(image_path.name),
                 }
             )
 
@@ -139,10 +164,10 @@ def main():
     # --- failure cases -------------------------------------------------------------
     failure_cases = []
     if failure_dir.is_dir():
-        for key, (title, note) in FAILURE_CASE_META.items():
+        for key, (title, note, why) in FAILURE_CASE_META.items():
             sheet = failure_dir / f"{key}_failure_sheet.png"
             if sheet.exists():
-                failure_cases.append({"title": title, "note": note, "sheet_src": rel(sheet, out_dir)})
+                failure_cases.append({"title": title, "note": note, "why": why, "sheet_src": rel(sheet, out_dir)})
 
     env = Environment(loader=FileSystemLoader(str(Path(__file__).parent / "templates")))
     template = env.get_template("portfolio_template.html")

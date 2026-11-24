@@ -1,179 +1,182 @@
-# Vivid — Before/After Cartoonization Portfolio
+# Vivid
 
-A small pipeline that runs pretrained AnimeGAN2 checkpoints over your own
-photos, compares the variants with objective metrics, deliberately
-highlights where the models break, and packages everything into one HTML
-page you can screen-share to a jury.
+Photos into anime and cartoon art with pretrained GANs, compared honestly.
 
-## Quick start
+Final Gen AI project, Topic 128: Cartoonize Photos with AnimeGAN / CartoonGAN.
+
+**Live demo:** _link coming soon_ <!-- TODO: paste the deployed URL here -->
+
+![Vivid hero](docs/screenshots/01-hero.png)
+
+Vivid runs 10 pretrained GAN styles and one classic filter with no AI over your photo, shows before
+and after, measures what changed, and shows where the models fail.
+
+## Run it locally
+
+Needs Python 3.12 (PyTorch 2.4 wheels don't support the newest Python releases).
 
 ```bash
-cd Vivid
-python -m venv venv                 # already created if you're reading this from the repo
-venv\Scripts\activate                # Windows PowerShell/cmd
-# source venv/Scripts/activate       # Git Bash
+py -3.12 -m venv .venv312
+.venv312\Scripts\activate              # Windows
+# source .venv312/bin/activate         # macOS / Linux
 
 pip install -r requirements.txt
-
-python cartoonize.py                 # inputs/  -> outputs/{model}/{filename}, timing stats
-python compare.py                    # contact sheets + SSIM/hist/edge metrics
-python failure_cases.py              # deliberate face-closeup + busy-background stress test
-python portfolio.py                  # builds portfolio/index.html
-
-# or, all four stages in one go:
-python run_all.py
+python tools/download_weights.py       # once, about 220 MB, resumes if interrupted
+python server.py
 ```
 
-Then open `portfolio/index.html` in a browser (or screen-share the tab).
+Open http://127.0.0.1:7860. After the weights are downloaded, no internet is needed.
 
-Drop your own photos into `inputs/` before running — a few free-license
-placeholder photos are already there so the scripts are verifiable
-immediately. `failure_cases/inputs/` similarly ships a placeholder face
-close-up and busy-background photo; swap in your own for a stronger demo.
+Settings: `PORT` (default 7860) and `HOST` (default 127.0.0.1; use 0.0.0.0 in a container or to reach
+it from another device). The webcam only works on localhost or HTTPS, because browsers require it.
 
-The first run of `cartoonize.py` (or any script that loads models)
-downloads the pretrained weights via `torch.hub` from the
-[`bryandlee/animegan2-pytorch`](https://github.com/bryandlee/animegan2-pytorch)
-repo and caches them under `~/.cache/torch/hub` — no manual weight
-hunting, but it does need an internet connection the first time.
+Run the tests:
 
-### A note on cropping
+```bash
+pip install -r requirements-dev.txt
+pytest tests
+```
 
-`face2paint` (the pre/post-processing wrapper these checkpoints ship with)
-center-crops every input to a square before resizing to 512×512. Wide
-landscape photos lose their left/right edges in the output — that's why
-originals in the portfolio grid are rectangular but every stylized output
-is square. This is expected behavior for this model family, not a bug.
+## Architecture
 
-### Per-stage options
+```
+browser (frontend/, plain HTML, CSS, JS)
+   |  POST /api/cartoonize  (photo, style, intensity, color_pop)
+   v
+server.py        FastAPI: validation, friendly errors, inference in worker threads
+   v
+registry.py      loads every model once; preprocess -> model -> postprocess -> metrics
+   |-- AnimeGANv2   PyTorch, network code from torch.hub
+   |-- AnimeGANv3   ONNX Runtime
+   |-- CartoonGAN   cartoongan.py, PyTorch
+   '-- filter       classic_filter.py, OpenCV
+   v
+metrics.py       SSIM, histogram shift, edge-density change
+```
 
-Every script takes `--models` (comma-separated, default `all`), `--device`
-(`cpu`/`cuda`/`auto`), and an `--input`/`--output` pair — run any script
-with `--help` for the full list. Model names: `face_paint_v2`, `paprika`,
-`celeba_distill` (see `models.py`).
-
-## What's in here
-
-| File | Purpose |
+| Path | Purpose |
 |---|---|
-| `models.py` | Loads the three pretrained AnimeGAN2 checkpoints via `torch.hub` |
-| `cartoonize.py` | Batch CLI: photo(s) → each model → `outputs/{model}/{filename}`, with timing |
-| `metrics.py` | SSIM, color-histogram shift, edge-density change between original and output |
-| `compare.py` | Builds a labeled contact sheet per photo + writes `outputs/metrics.csv` |
-| `failure_cases.py` | Runs all models on a face close-up and a busy-background photo, with annotated callouts |
-| `portfolio.py` + `templates/` | Renders everything into one HTML page |
-| `run_all.py` | Runs the four stages above in sequence |
+| `server.py` | API and static files |
+| `registry.py` | Style catalogue, one interface for all models, result cache |
+| `cartoongan.py`, `classic_filter.py` | CartoonGAN generator; filter with no AI |
+| `weight_store.py`, `tools/download_weights.py` | Weight sources, SHA-256 checks, downloads |
+| `metrics.py` | SSIM, color-histogram shift, edge-density change |
+| `frontend/` | The website. No build step, fonts included |
+| `tools/build_showcase.py` | Regenerates every image and number in `frontend/gallery/` |
+| `tests/` | Registry and API tests |
+| `cartoonize.py`, `compare.py`, `failure_cases.py`, `portfolio.py`, `run_all.py` | The original batch pipeline (see below) |
+
+**API**
+
+| Endpoint | Returns |
+|---|---|
+| `POST /api/cartoonize` | Result image, the matching original, four metrics. Form fields: `image`, `style`, `intensity` 0-100, `color_pop`, `max_side` 256-1024 |
+| `POST /api/compare` | Every style at 512 px, with metrics |
+| `GET /api/styles` | Styles with family, source and description |
+| `GET /api/examples` | Sample photos |
+| `GET /api/health` | Status and number of styles online |
+
+JPG, PNG or WebP, up to 10 MB. Interactive docs are at `/docs`.
+
+**Image handling.** Photos are turned upright (EXIF), resized so both sides are multiples of 32 and
+the long side is 512 to 1024 px, with no square crop. CartoonGAN runs at 512 px, close to the size its
+authors' test code uses.
+
+**Speed.** Measured on a Ryzen 5 3500U laptop CPU: AnimeGANv3 about 4.6 s, CartoonGAN about 6.6 s,
+AnimeGANv2 about 9.4 s, the filter 0.2 s (averages over the three sample photos). Changing intensity
+or color pop afterwards takes under a second, because the model output is cached.
+
+## Models, sources and licenses
+
+| Styles | Network | Weights from | License |
+|---|---|---|---|
+| Portrait, Portrait Classic, Cel Shade | AnimeGANv2 generator | [bryandlee/animegan2-pytorch](https://github.com/bryandlee/animegan2-pytorch) (`face_paint_512_v2`, `face_paint_512_v1`, `celeba_distill`) | MIT |
+| Paprika | AnimeGANv2 generator | Same repository, converted from [TachibanaYoshino/AnimeGANv2](https://github.com/TachibanaYoshino/AnimeGANv2) | MIT (port); the original AnimeGANv2 is non-commercial |
+| Hayao, Shinkai | AnimeGANv3 | [TachibanaYoshino/AnimeGANv3](https://github.com/TachibanaYoshino/AnimeGANv3) release v1.1.0 | Non-commercial, academic use |
+| CartoonGAN Hayao, Hosoda, Shinkai, Paprika | CartoonGAN (Chen, Lai, Liu, CVPR 2018) | Authors' weights, converted by [Yijunmaverick](https://github.com/Yijunmaverick/CartoonGAN-Test-Pytorch-Torch), from the [maciej3031/comixify](https://github.com/maciej3031/comixify) mirror because the original host is offline | Conversion code MIT; comixify repository CC BY-NC 4.0 |
+| Classic Filter (no AI) | none | OpenCV | Apache 2.0 |
+
+Several models are **non-commercial only**, so treat Vivid as an academic project. Style names refer to
+the film directors whose frames the models were trained on; Vivid is not affiliated with them. Fonts
+(Anton, Inter Tight, JetBrains Mono) are under the SIL Open Font License.
+
+Being precise about the checkpoints, because a jury may ask:
+
+- The four `bryandlee` checkpoints share one generator network but not one training recipe. Portrait and
+  Portrait Classic were trained on 512x512 face images. `celeba_distill` appears to be the repository's
+  "Webtoon Face" model: its notes describe a 256x256 model distilled using CelebA-HQ photos. Paprika is the
+  original AnimeGANv2 film style, converted.
+- Hayao and Shinkai here are AnimeGANv3, not v2.
+- We checked our CartoonGAN port against published sample outputs for Hayao and Hosoda, and they match closely.
+  Shinkai and Paprika use the same code, but there were no published samples to compare.
 
 ## How it works
 
-Vivid uses **AnimeGAN2**, a convolutional generator trained adversarially
-to translate ordinary photos into an anime/cartoon visual style. A few
-concepts worth being able to explain to the jury:
+**Generator.** A convolutional network that takes a photo and returns a picture. An *encoder* shrinks the
+photo step by step, *residual blocks* transform it, and a *decoder* builds it back up to full size. The
+output isn't a mask or a filter layer; it's a new image, drawn in a single pass.
 
-**Encoder–decoder generator.** The generator is a single feed-forward CNN:
-an *encoder* downsamples the input photo through strided convolutions into
-a compact feature representation, a stack of residual blocks processes
-that representation, and a *decoder* upsamples it back to a full-resolution
-RGB image. Unlike a segmentation network, the output isn't a mask or a
-label map — it's a complete re-synthesized image, produced in a single
-forward pass (a few hundred milliseconds on CPU, real-time-ish on GPU).
+**Adversarial loss.** During training, a second network, the *discriminator*, is shown real cartoon frames
+and generated ones and must tell them apart. The generator is trained to fool it. This pushes results
+toward real cartoon statistics: flat colour areas and clean edges.
 
-**Adversarial loss.** A separate *discriminator* network is trained
-alongside the generator to distinguish "real anime frames" from "generator
-outputs." The generator is trained to fool it. This is what pushes results
-toward genuine cartoon-style texture statistics — flat color regions, bold
-clean edges — rather than just a global color/contrast shift.
+**Content loss.** Fooling the discriminator isn't enough; the output must still show *your* photo. The
+content loss compares photo and output in the feature space of a pretrained VGG network, so the same
+things stay in the same places.
 
-**Content and style losses.** Adversarial loss alone doesn't guarantee the
-output still looks like *your photo* — it only rewards looking cartoon-ish.
-So training also includes a **content loss** (comparing input and output
-in a pretrained VGG feature space, to preserve structure/semantics — what's
-in the image and roughly where) and **style losses** (comparing grayscale
-VGG features and a blurred/desaturated color signal against real cartoon
-images, to transfer palette and shading style). AnimeGAN's specific
-contribution is an *edge-promoting adversarial loss*: the discriminator is
-also shown edge-smoothed versions of real cartoon frames, which specifically
-penalizes muddy or blurry edges relative to real hand-drawn line art.
+**Edge-promoting loss.** Introduced by CartoonGAN. The discriminator also sees real cartoon frames whose
+edges were blurred, and must call them fake. The generator learns that blurry lines aren't cartoon lines.
 
-**Unpaired image-to-image translation.** There is no dataset of "this exact
-photo, hand-drawn as its cartoon equivalent" — that pairing doesn't exist
-at any scale. Training instead uses two *unrelated* collections: a large
-set of real photos and a large set of real anime/cartoon frames, with no
-correspondence between them. The loss functions above are specifically
-designed so a mapping between the two domains can be learned from these
-independent sets alone (the same family of idea as CycleGAN). This is what
-makes the whole approach practical — collecting matched photo/cartoon pairs
-by hand would be a non-starter at the scale GANs need.
+**Style and colour losses.** Added by AnimeGAN. A grayscale style loss transfers anime texture without
+copying its colours, and a colour loss keeps the photo's colours. CartoonGAN has neither, which is
+probably why its colours drift more in our results.
 
-## Model variants used
+**Unpaired image-to-image translation.** Nobody has drawn the cartoon twin of every photo. Training uses
+two unrelated collections, real photos and real cartoon frames, with no matching pairs. This is the same
+family of problem as CycleGAN, though these models keep the content with a VGG loss instead of CycleGAN's
+cycle consistency. The number of paired training images needed is zero.
 
-All three checkpoints share the same generator/discriminator architecture
-and training recipe — they differ only in the dataset/distillation used:
+AnimeGANv3 is a later design with a two-tail generator and more losses; the ideas above still apply.
+Only the generator runs when you use Vivid. The discriminator and losses exist only during training.
 
-- **`face_paint_v2`** — general-purpose portrait/scene stylization, the
-  best all-round default.
-- **`paprika`** — bolder, more graphic style, tuned toward Satoshi Kon's
-  film *Paprika*.
-- **`celeba_distill`** — a lighter, distilled checkpoint with softer,
-  subtler stylization.
+## Metrics
 
-Note on naming: these are the actual published checkpoint names from
-`bryandlee/animegan2-pytorch`. They are **not** the original "Hayao" /
-"Shinkai" TensorFlow AnimeGANv2 checkpoints (those reference Studio
-Ghibli's Hayao Miyazaki and Makoto Shinkai's visual styles specifically);
-this repo's checkpoints are portrait-oriented distillations of that same
-line of work, chosen here because they load cleanly through `torch.hub`
-with no manual conversion. Say this plainly if a jury member who knows the
-original AnimeGANv2 project asks — it's a fair question and the honest
-answer is more credible than glossing over it.
+| Metric | Meaning |
+|---|---|
+| SSIM | Structural similarity to the photo. 1 is identical |
+| Hist shift | Distance between colour histograms. 0 is the same palette |
+| Edge Δ | Change in the share of edge pixels. Can be huge for soft photos that start with few edges |
+| ms | Time the model took |
+
+None of these means better or worse: a cartoon is supposed to change the photo.
 
 ## Known limitations
 
-- **Face distortion.** The face-oriented checkpoints were trained at a
-  fixed 512×512 resolution on a particular face-crop distribution. Faces
-  outside that distribution — extreme close-ups, unusual angles, strong
-  lighting, glasses/accessories — commonly come out with warped eyes,
-  waxy/plastic-looking skin, or subtle left-right asymmetry. See
-  `failure_cases.py`'s face close-up output for a deliberate example.
+- **Faces.** The models only know faces like their training data. Close-ups, hard light and low resolution
+  push them outside it. Paprika draws cracks on bright, smooth skin; Portrait invents eye and brow detail
+  that isn't in a 128 px photo.
+- **Fine detail.** Training rewards flat shapes with clean lines, so leaves, hair and fabric get smeared or
+  replaced by a pattern. It's a side effect of the goal, not a bug.
+- **Colour drift.** CartoonGAN can turn a blue sky brown or green. CartoonGAN Hayao also leaves artifacts
+  near the corners of smooth skies.
+- **Temporal flicker.** Each image is drawn from scratch. Move a photo by 5 pixels, line the two outputs up
+  again, and 7.8% of pixels still differ by more than 3% (Hayao). In video that is visible flicker.
+- **Not a filter, for better and worse.** A filter applies one fixed recipe to every pixel. A GAN reacts to
+  what is in the picture, which makes it look drawn, but it can also make mistakes a filter never could,
+  like bending a face.
+- **CPU speed.** Several seconds per photo on a laptop. One style runs at a time.
 
-- **Loss of fine texture and detail.** The adversarial and style losses
-  explicitly reward flat, bold regions, because that's what real cartoon
-  frames look like. High-frequency detail — individual hair strands,
-  foliage, fabric weave — gets smeared or flattened into blotches rather
-  than stylized crisply. This is a direct, by-design consequence of the
-  training objective, not a bug to patch. See the busy-background failure
-  case.
+## The original batch pipeline
 
-- **Temporal instability.** The model processes every image independently
-  with no notion of "the previous frame." There is no temporal-consistency
-  loss or mechanism at all. Run it on consecutive video frames and you'll
-  see visible flicker: small changes in the input can flip local
-  stylization decisions (exact edge placement, which way a color patch
-  splits) frame to frame. Fine for single photos; a real problem the
-  moment this is applied to video without additional smoothing.
+Still works, for offline batches with three AnimeGANv2 checkpoints:
 
-- **This is not a hand-tuned Instagram-style filter.** A conventional
-  photo filter is a fixed, global pixel-wise transform — the same
-  saturation curve / color LUT / convolution kernel applied identically to
-  every pixel of every image, tuned once by a designer and fully
-  deterministic. AnimeGAN2 is a **learned nonlinear function of the whole
-  image's content**: the network makes different local decisions depending
-  on what it infers a region *is* (sky vs. foliage vs. skin vs. hard edge),
-  producing spatially-varying, content-aware stylization that a fixed
-  filter is architecturally incapable of. The tradeoff runs the other way,
-  too — a filter is perfectly predictable and never distorts geometry; a
-  learned model occasionally makes content-dependent mistakes (see the two
-  limitations above) that a filter simply cannot make, because a filter
-  never "looks at" what's in the image in the first place.
+```bash
+python cartoonize.py       # inputs/ -> outputs/{model}/
+python compare.py          # contact sheets and outputs/metrics.csv
+python failure_cases.py    # face close-up and busy-background stress test
+python portfolio.py        # builds portfolio/index.html
+python run_all.py          # all four
+```
 
-## Requirements / environment notes
-
-- Built and tested against **Python 3.12** — PyTorch wheel support tends
-  to lag brand-new Python releases, so if you have multiple Pythons
-  installed, prefer 3.12 over anything newer when creating the venv
-  (`py -3.12 -m venv venv`).
-- `requirements.txt` pins CPU-only `torch`/`torchvision` builds — fast to
-  install and enough for a demo (a few hundred ms/image on a laptop CPU,
-  per the timing stats `cartoonize.py` prints). If you have a CUDA GPU,
-  install matching `torch`/`torchvision` CUDA wheels instead and pass
-  `--device cuda`.
+These scripts use `face2paint`, which centre-crops every photo to a 512x512 square, so their numbers differ
+from the website's, which keeps the whole frame. Every script takes `--help`.

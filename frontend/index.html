@@ -232,7 +232,7 @@
         <div><dt>Style loss</dt><dd>Textures and colours match real anime. Added by AnimeGAN.</dd></div>
         <div><dt>Edge-promoting loss</dt><dd>Blurred edges count as fake, so lines stay crisp. From CartoonGAN.</dd></div>
       </dl>
-      <figcaption>Training only. When you press Cartoonize, just the generator runs, once.</figcaption>
+      <figcaption>Training only. When you press Cartoonize, just the generator runs, once. Simplified: AnimeGANv3 uses a two-tail version of this generator.</figcaption>
     </figure>
 
     <div class="unpaired reveal">
@@ -257,7 +257,20 @@
       <h2 class="display">Portfolio</h2>
       <div class="tabs" id="pf-tabs" role="group" aria-label="Choose a photo"></div>
     </div>
+    <p class="lead pf-intro reveal">Three very different photos, every style, no retouching. Good and bad results are both here. Click any frame to drag between before and after.</p>
+    <div class="pf-note" id="pf-note" aria-live="polite"></div>
     <div class="pf-grid" id="pf-grid"></div>
+
+    <div class="averages reveal">
+      <div class="section-head">
+        <h3 class="results-name">The numbers, averaged</h3>
+        <p class="mono" id="avg-basis"></p>
+      </div>
+      <div class="table-scroll" tabindex="0" role="group" aria-label="Averaged metrics table, scrollable">
+        <table class="avg" id="avg-table"></table>
+      </div>
+      <div class="avg-notes" id="avg-notes"></div>
+    </div>
   </section>
 
   <!-- LIMITS -->
@@ -275,12 +288,12 @@
       <article class="reveal">
         <h3>How is this different from a photo filter?</h3>
         <p>A filter applies one fixed recipe to every pixel of every photo. The GAN learned what to do: it treats sky, skin and hard edges differently because it responds to what is in the picture.</p>
-        <p>The filter has one advantage. It is predictable and never bends a face.</p>
+        <p>You can see it on the lioness. The filter covers her in leopard spots, because every bit of fur looks like an edge to it. The filter does have one advantage: it is predictable and never bends a face.</p>
         <a class="btn btn-solid" href="#studio" data-demo="vs">See AI vs Filter live</a>
       </article>
       <article class="reveal">
         <h3>Where does it break down?</h3>
-        <p>Faces can crack or go waxy, fine detail gets smeared into blotches, and video would flicker because every frame is drawn from scratch.</p>
+        <p>Faces can crack, fine detail gets smeared into blotches, and video would flicker because every frame is drawn from scratch. CartoonGAN also shifts colours, like a blue sky turning green.</p>
         <p>We show these failures on purpose, using the same models you can run above.</p>
         <a class="btn btn-line" href="#limits">See the failure cases</a>
       </article>
