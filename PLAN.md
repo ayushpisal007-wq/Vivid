@@ -17,7 +17,7 @@ The design spec lives in [DESIGN.md](DESIGN.md).
 ## Task list
 
 - [x] Phase 0: Repo cleanup
-- [ ] Phase 1: Model registry
+- [x] Phase 1: Model registry
 - [ ] Phase 2: API
 - [ ] Phase 3: Frontend
 - [ ] Phase 4: Jury content
@@ -94,3 +94,29 @@ short summary of what works and what fell back.
 - Phase 0: app.py (the Gradio app) was removed; it stays in git history (commit 5de8351).
 - Local environments: use `.venv312` (Python 3.12). The old `venv/` is a Python 3.14
   environment with mismatched packages; it is untracked now but left on disk.
+
+### Phase 1 (done, no fallback needed)
+
+All 11 styles load and pass tests: 4 AnimeGANv2, 2 AnimeGANv3, 4 CartoonGAN, 1 classic filter.
+
+- Files: registry.py (the registry), weight_store.py (URLs, SHA-256 pins, resumable parallel
+  downloads), cartoongan.py, classic_filter.py, tools/download_weights.py, tests/test_registry.py.
+- Weights live in weights/ (gitignored, about 220 MB). AnimeGANv2 and CartoonGAN files were
+  checked against GitHub's published blob hashes; every file is SHA-256 pinned. The two
+  AnimeGANv3 files have no published hash to check against, so their pins record what the
+  official GitHub release served.
+- CartoonGAN: the original host (vllab1.ucmerced.edu) is down, so the weights come from the
+  maciej3031/comixify mirror, pinned to a commit. The Hayao port closely reproduces three
+  published sample outputs of Yijunmaverick/CartoonGAN-Test-Pytorch-Torch, which also confirmed
+  BGR input order. Hosoda, Shinkai and Paprika share the code path but were not compared.
+- CartoonGAN colour shifts (brown or green skies, tinted skin) appear on our samples. Hayao
+  matching its published outputs says they come from the checkpoints, not from this port.
+  Paprika's cracked skin is also in the old 512px outputs. Good material for Limits.
+- Speed on the Ryzen 5 3500U, sample photos (long side 896): AnimeGANv2 about 9-10 s, AnimeGANv3
+  5-6 s, CartoonGAN about 7 s (capped at 512px, close to its reference size), filter 0.3 s.
+  ONNX Runtime was tried for AnimeGANv2 and is slower here than PyTorch.
+- Phase 2: Compare-all at full size takes over a minute, so use the registry's max_side (e.g. 512).
+- Phase 4: README says "a few hundred ms" on a laptop CPU. That is wrong on this machine (about
+  5 s at 512x512) and must be corrected. inputs/sample_street.jpg is actually a lioness.
+- Licences to state in README: animegan2-pytorch is MIT; AnimeGANv3 is non-commercial/academic;
+  comixify is CC BY-NC 4.0. Fine for a jury project, not for commercial use.
