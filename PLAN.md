@@ -170,3 +170,12 @@ All 11 styles load and pass tests: 4 AnimeGANv2, 2 AnimeGANv3, 4 CartoonGAN, 1 c
 - Nothing fell back: all planned model families are in. The CartoonGAN weights come from a mirror.
 - Not done: no Dockerfile or deployment, so the README's live link is still a placeholder to fill in.
 - Screenshots are JPEG in docs/screenshots (4 MB instead of 14 MB as PNG).
+
+### Public link and deployment
+
+- Hugging Face now needs a PRO account for Docker Spaces, so the Space was not created. The Docker
+  and Space files are ready; the image build itself has not been run (no Docker on this laptop).
+- start_public.bat starts Vivid and a free Cloudflare quick tunnel, and prints both addresses. The
+  public address changes every time. If the tunnel fails, the local site keeps working.
+- The upload limit counts bytes as they arrive, because some HTTP versions and proxies leave out
+  Content-Length.

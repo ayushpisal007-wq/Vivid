@@ -23,3 +23,6 @@ weights/
 
 # local config
 .env
+
+# downloaded helper programs (cloudflared)
+tools/bin/

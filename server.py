@@ -91,9 +91,14 @@ async def on_crash(request: Request, exc: Exception):
     return JSONResponse({"detail": "Something went wrong on our side. Please try again."}, 500)
 
 
-class RejectOversizedUploads:
-    """Checks the size before the body is read, so a huge upload never gets spooled to disk.
+class BodyTooLarge(Exception):
+    pass
 
+
+class RejectOversizedUploads:
+    """Stops a huge upload early, whether or not it announces its size, so it never fills the disk.
+
+    Some proxies and HTTP versions leave Content-Length out, so the bytes are counted as well.
     Plain ASGI on purpose: the @app.middleware decorator hides client disconnects from endpoints,
     and /api/compare relies on those to stop work for a closed tab.
     """
@@ -102,16 +107,36 @@ class RejectOversizedUploads:
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        if scope["type"] == "http" and scope["method"] == "POST":
-            length = Headers(scope=scope).get("content-length", "")
-            error = None
-            if not length.isdigit():
-                error = JSONResponse({"detail": "The upload is missing its size. Please try again."}, 411)
-            elif int(length) > MAX_UPLOAD + MULTIPART_OVERHEAD:
-                error = JSONResponse({"detail": TOO_BIG}, 413)
-            if error:
-                return await error(scope, receive, send)
-        await self.app(scope, receive, send)
+        if scope["type"] != "http" or scope["method"] != "POST":
+            return await self.app(scope, receive, send)
+
+        limit = MAX_UPLOAD + MULTIPART_OVERHEAD
+        too_big = JSONResponse({"detail": TOO_BIG}, 413, headers={"connection": "close"})
+        length = Headers(scope=scope).get("content-length", "")
+        if length.isdigit() and int(length) > limit:
+            return await too_big(scope, receive, send)
+
+        received, exceeded = 0, False
+
+        async def counted_receive():
+            nonlocal received, exceeded
+            message = await receive()
+            received += len(message.get("body", b""))
+            if received > limit:
+                exceeded = True
+                raise BodyTooLarge
+            return message
+
+        async def guarded_send(message):
+            if not exceeded:  # drop the generic parsing error the app would answer with
+                await send(message)
+
+        try:
+            await self.app(scope, counted_receive, guarded_send)
+        except BodyTooLarge:
+            pass
+        if exceeded:
+            await too_big(scope, receive, send)
 
 
 app.add_middleware(RejectOversizedUploads)

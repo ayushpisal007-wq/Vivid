@@ -187,9 +187,27 @@ def test_missing_photo(client):
     assert r.status_code == 422 and r.json()["detail"] == "Please add a photo first."
 
 
-def test_chunked_upload_without_length_is_refused(client):
-    r = client.post("/api/cartoonize", content=iter([b"x" * 1000]), headers={"content-type": "multipart/form-data; boundary=x"})
-    assert r.status_code == 411
+def chunked(client, photo):
+    """The same multipart upload, streamed without a Content-Length header."""
+    crlf = bytes([13, 10])
+    lines = [
+        b"--x", b'Content-Disposition: form-data; name="style"', b"", b"classic_filter",
+        b"--x", b'Content-Disposition: form-data; name="image"; filename="p.jpg"', b"Content-Type: image/jpeg", b"", photo,
+        b"--x--", b"",
+    ]
+    body = crlf.join(lines)
+    parts = (body[i : i + 65536] for i in range(0, len(body), 65536))
+    return client.post("/api/cartoonize", content=parts, headers={"content-type": "multipart/form-data; boundary=x"})
+
+
+def test_upload_without_length_header_works(client):
+    r = chunked(client, PHOTO)
+    assert r.status_code == 200, r.text
+
+
+def test_oversized_upload_without_length_header_is_refused(client):
+    r = chunked(client, PHOTO + bytes(server.MAX_UPLOAD + 2 * server.MULTIPART_OVERHEAD))
+    assert r.status_code == 413 and r.json()["detail"] == server.TOO_BIG
 
 
 def test_crash_is_a_friendly_500(monkeypatch):

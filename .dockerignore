@@ -31,3 +31,5 @@ deploy/
 *.md
 requirements-dev.txt
 .env
+tools/bin/
+*.bat

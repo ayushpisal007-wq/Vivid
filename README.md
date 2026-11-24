@@ -30,6 +30,8 @@ Open http://127.0.0.1:7860. After the weights are downloaded, no internet is nee
 Settings: `PORT` (default 7860) and `HOST` (default 127.0.0.1; use 0.0.0.0 in a container or to reach
 it from another device). The webcam only works on localhost or HTTPS, because browsers require it.
 
+The `Dockerfile`, `deploy/space_README.md` and `tools/deploy_space.py` are ready for Hugging Face Spaces deployment on a PRO account.
+
 Run the tests:
 
 ```bash
