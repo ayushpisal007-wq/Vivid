@@ -1,0 +1,877 @@
+{
+ "styles": [
+  {
+   "id": "face_paint_v2",
+   "name": "Portrait",
+   "family": "AnimeGAN",
+   "source": "AnimeGANv2 (bryandlee, PyTorch)",
+   "description": "Clean anime portrait look, the best all-rounder for faces.",
+   "max_side": 1024
+  },
+  {
+   "id": "face_paint_v1",
+   "name": "Portrait Classic",
+   "family": "AnimeGAN",
+   "source": "AnimeGANv2 (bryandlee, PyTorch)",
+   "description": "Earlier portrait checkpoint with a stronger, more graphic repaint.",
+   "max_side": 1024
+  },
+  {
+   "id": "paprika",
+   "name": "Paprika",
+   "family": "AnimeGAN",
+   "source": "AnimeGANv2 (bryandlee, PyTorch)",
+   "description": "Bold, graphic look inspired by Satoshi Kon's film Paprika.",
+   "max_side": 1024
+  },
+  {
+   "id": "celeba_distill",
+   "name": "Soft Distill",
+   "family": "AnimeGAN",
+   "source": "AnimeGANv2 (bryandlee, PyTorch)",
+   "description": "Lighter distilled checkpoint with a softer, subtler finish.",
+   "max_side": 1024
+  },
+  {
+   "id": "hayao_v3",
+   "name": "Hayao",
+   "family": "AnimeGAN",
+   "source": "AnimeGANv3 (TachibanaYoshino, ONNX)",
+   "description": "Ghibli-like film look with bold lines and painted skies.",
+   "max_side": 1024
+  },
+  {
+   "id": "shinkai_v3",
+   "name": "Shinkai",
+   "family": "AnimeGAN",
+   "source": "AnimeGANv3 (TachibanaYoshino, ONNX)",
+   "description": "Makoto Shinkai-like look with vivid light and saturated colour.",
+   "max_side": 1024
+  },
+  {
+   "id": "cartoongan_hayao",
+   "name": "CartoonGAN Hayao",
+   "family": "CartoonGAN",
+   "source": "CartoonGAN (CVPR 2018)",
+   "description": "The original CartoonGAN trained on Miyazaki film frames.",
+   "max_side": 512
+  },
+  {
+   "id": "cartoongan_hosoda",
+   "name": "CartoonGAN Hosoda",
+   "family": "CartoonGAN",
+   "source": "CartoonGAN (CVPR 2018)",
+   "description": "CartoonGAN trained on Mamoru Hosoda film frames.",
+   "max_side": 512
+  },
+  {
+   "id": "cartoongan_shinkai",
+   "name": "CartoonGAN Shinkai",
+   "family": "CartoonGAN",
+   "source": "CartoonGAN (CVPR 2018)",
+   "description": "CartoonGAN trained on Makoto Shinkai film frames.",
+   "max_side": 512
+  },
+  {
+   "id": "cartoongan_paprika",
+   "name": "CartoonGAN Paprika",
+   "family": "CartoonGAN",
+   "source": "CartoonGAN (CVPR 2018)",
+   "description": "CartoonGAN trained on frames from Paprika.",
+   "max_side": 512
+  },
+  {
+   "id": "classic_filter",
+   "name": "Classic Filter (no AI)",
+   "family": "Filter",
+   "source": "OpenCV",
+   "description": "Fixed recipe: smooth, reduce colours, trace edges. No learning involved.",
+   "max_side": 1024
+  }
+ ],
+ "photos": [
+  {
+   "id": "sample_landscape",
+   "name": "Fjord",
+   "kind": "example",
+   "original": {
+    "src": "gallery/sample_landscape__original.webp",
+    "thumb": "gallery/sample_landscape__original.thumb.webp",
+    "w": 896,
+    "h": 608
+   },
+   "outputs": {
+    "face_paint_v2": {
+     "src": "gallery/sample_landscape__face_paint_v2.webp",
+     "thumb": "gallery/sample_landscape__face_paint_v2.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.6012,
+      "hist_shift": 0.6973,
+      "edge_density_change_pct": -55.06,
+      "inference_ms": 9668.7
+     }
+    },
+    "face_paint_v1": {
+     "src": "gallery/sample_landscape__face_paint_v1.webp",
+     "thumb": "gallery/sample_landscape__face_paint_v1.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.529,
+      "hist_shift": 0.614,
+      "edge_density_change_pct": -73.94,
+      "inference_ms": 8916.5
+     }
+    },
+    "paprika": {
+     "src": "gallery/sample_landscape__paprika.webp",
+     "thumb": "gallery/sample_landscape__paprika.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.6372,
+      "hist_shift": 0.6296,
+      "edge_density_change_pct": -50.19,
+      "inference_ms": 8879.0
+     }
+    },
+    "celeba_distill": {
+     "src": "gallery/sample_landscape__celeba_distill.webp",
+     "thumb": "gallery/sample_landscape__celeba_distill.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.49,
+      "hist_shift": 0.4969,
+      "edge_density_change_pct": -26.0,
+      "inference_ms": 8873.9
+     }
+    },
+    "hayao_v3": {
+     "src": "gallery/sample_landscape__hayao_v3.webp",
+     "thumb": "gallery/sample_landscape__hayao_v3.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.8246,
+      "hist_shift": 0.4077,
+      "edge_density_change_pct": -13.67,
+      "inference_ms": 4517.0
+     }
+    },
+    "shinkai_v3": {
+     "src": "gallery/sample_landscape__shinkai_v3.webp",
+     "thumb": "gallery/sample_landscape__shinkai_v3.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.8798,
+      "hist_shift": 0.2386,
+      "edge_density_change_pct": -5.7,
+      "inference_ms": 4570.7
+     }
+    },
+    "cartoongan_hayao": {
+     "src": "gallery/sample_landscape__cartoongan_hayao.webp",
+     "thumb": "gallery/sample_landscape__cartoongan_hayao.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.6185,
+      "hist_shift": 0.8205,
+      "edge_density_change_pct": -9.08,
+      "inference_ms": 6526.8
+     }
+    },
+    "cartoongan_hosoda": {
+     "src": "gallery/sample_landscape__cartoongan_hosoda.webp",
+     "thumb": "gallery/sample_landscape__cartoongan_hosoda.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.7102,
+      "hist_shift": 0.8066,
+      "edge_density_change_pct": -36.04,
+      "inference_ms": 6910.7
+     }
+    },
+    "cartoongan_shinkai": {
+     "src": "gallery/sample_landscape__cartoongan_shinkai.webp",
+     "thumb": "gallery/sample_landscape__cartoongan_shinkai.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.7742,
+      "hist_shift": 0.6408,
+      "edge_density_change_pct": -29.01,
+      "inference_ms": 6025.1
+     }
+    },
+    "cartoongan_paprika": {
+     "src": "gallery/sample_landscape__cartoongan_paprika.webp",
+     "thumb": "gallery/sample_landscape__cartoongan_paprika.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.6403,
+      "hist_shift": 0.908,
+      "edge_density_change_pct": -26.05,
+      "inference_ms": 6395.3
+     }
+    },
+    "classic_filter": {
+     "src": "gallery/sample_landscape__classic_filter.webp",
+     "thumb": "gallery/sample_landscape__classic_filter.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.489,
+      "hist_shift": 0.6458,
+      "edge_density_change_pct": -6.62,
+      "inference_ms": 172.9
+     }
+    }
+   }
+  },
+  {
+   "id": "sample_portrait",
+   "name": "Portrait",
+   "kind": "example",
+   "original": {
+    "src": "gallery/sample_portrait__original.webp",
+    "thumb": "gallery/sample_portrait__original.thumb.webp",
+    "w": 704,
+    "h": 896
+   },
+   "outputs": {
+    "face_paint_v2": {
+     "src": "gallery/sample_portrait__face_paint_v2.webp",
+     "thumb": "gallery/sample_portrait__face_paint_v2.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.7737,
+      "hist_shift": 0.5104,
+      "edge_density_change_pct": 225.22,
+      "inference_ms": 10329.3
+     }
+    },
+    "face_paint_v1": {
+     "src": "gallery/sample_portrait__face_paint_v1.webp",
+     "thumb": "gallery/sample_portrait__face_paint_v1.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.6841,
+      "hist_shift": 0.5649,
+      "edge_density_change_pct": 297.17,
+      "inference_ms": 10430.6
+     }
+    },
+    "paprika": {
+     "src": "gallery/sample_portrait__paprika.webp",
+     "thumb": "gallery/sample_portrait__paprika.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.7845,
+      "hist_shift": 0.6558,
+      "edge_density_change_pct": 26.47,
+      "inference_ms": 10447.4
+     }
+    },
+    "celeba_distill": {
+     "src": "gallery/sample_portrait__celeba_distill.webp",
+     "thumb": "gallery/sample_portrait__celeba_distill.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.7804,
+      "hist_shift": 0.3055,
+      "edge_density_change_pct": 509.43,
+      "inference_ms": 10008.5
+     }
+    },
+    "hayao_v3": {
+     "src": "gallery/sample_portrait__hayao_v3.webp",
+     "thumb": "gallery/sample_portrait__hayao_v3.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.7926,
+      "hist_shift": 0.1688,
+      "edge_density_change_pct": 1205.5,
+      "inference_ms": 5232.3
+     }
+    },
+    "shinkai_v3": {
+     "src": "gallery/sample_portrait__shinkai_v3.webp",
+     "thumb": "gallery/sample_portrait__shinkai_v3.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.7759,
+      "hist_shift": 0.1883,
+      "edge_density_change_pct": 1098.39,
+      "inference_ms": 4760.6
+     }
+    },
+    "cartoongan_hayao": {
+     "src": "gallery/sample_portrait__cartoongan_hayao.webp",
+     "thumb": "gallery/sample_portrait__cartoongan_hayao.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.8155,
+      "hist_shift": 0.4769,
+      "edge_density_change_pct": 249.85,
+      "inference_ms": 7036.3
+     }
+    },
+    "cartoongan_hosoda": {
+     "src": "gallery/sample_portrait__cartoongan_hosoda.webp",
+     "thumb": "gallery/sample_portrait__cartoongan_hosoda.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.7858,
+      "hist_shift": 0.9074,
+      "edge_density_change_pct": 243.02,
+      "inference_ms": 7233.6
+     }
+    },
+    "cartoongan_shinkai": {
+     "src": "gallery/sample_portrait__cartoongan_shinkai.webp",
+     "thumb": "gallery/sample_portrait__cartoongan_shinkai.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.8608,
+      "hist_shift": 0.3546,
+      "edge_density_change_pct": 246.49,
+      "inference_ms": 6600.5
+     }
+    },
+    "cartoongan_paprika": {
+     "src": "gallery/sample_portrait__cartoongan_paprika.webp",
+     "thumb": "gallery/sample_portrait__cartoongan_paprika.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.8291,
+      "hist_shift": 0.7508,
+      "edge_density_change_pct": 231.27,
+      "inference_ms": 6579.1
+     }
+    },
+    "classic_filter": {
+     "src": "gallery/sample_portrait__classic_filter.webp",
+     "thumb": "gallery/sample_portrait__classic_filter.thumb.webp",
+     "w": 704,
+     "h": 896,
+     "metrics": {
+      "ssim": 0.7411,
+      "hist_shift": 0.3302,
+      "edge_density_change_pct": 790.73,
+      "inference_ms": 201.7
+     }
+    }
+   }
+  },
+  {
+   "id": "sample_street",
+   "name": "Lioness",
+   "kind": "example",
+   "original": {
+    "src": "gallery/sample_street__original.webp",
+    "thumb": "gallery/sample_street__original.thumb.webp",
+    "w": 896,
+    "h": 608
+   },
+   "outputs": {
+    "face_paint_v2": {
+     "src": "gallery/sample_street__face_paint_v2.webp",
+     "thumb": "gallery/sample_street__face_paint_v2.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.7284,
+      "hist_shift": 0.3029,
+      "edge_density_change_pct": -37.65,
+      "inference_ms": 8758.7
+     }
+    },
+    "face_paint_v1": {
+     "src": "gallery/sample_street__face_paint_v1.webp",
+     "thumb": "gallery/sample_street__face_paint_v1.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.6825,
+      "hist_shift": 0.3596,
+      "edge_density_change_pct": -32.78,
+      "inference_ms": 8812.1
+     }
+    },
+    "paprika": {
+     "src": "gallery/sample_street__paprika.webp",
+     "thumb": "gallery/sample_street__paprika.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.7137,
+      "hist_shift": 0.6516,
+      "edge_density_change_pct": -73.75,
+      "inference_ms": 9142.0
+     }
+    },
+    "celeba_distill": {
+     "src": "gallery/sample_street__celeba_distill.webp",
+     "thumb": "gallery/sample_street__celeba_distill.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.6109,
+      "hist_shift": 0.335,
+      "edge_density_change_pct": 36.64,
+      "inference_ms": 8774.5
+     }
+    },
+    "hayao_v3": {
+     "src": "gallery/sample_street__hayao_v3.webp",
+     "thumb": "gallery/sample_street__hayao_v3.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.831,
+      "hist_shift": 0.2461,
+      "edge_density_change_pct": 34.93,
+      "inference_ms": 4283.1
+     }
+    },
+    "shinkai_v3": {
+     "src": "gallery/sample_street__shinkai_v3.webp",
+     "thumb": "gallery/sample_street__shinkai_v3.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.7333,
+      "hist_shift": 0.2553,
+      "edge_density_change_pct": 49.14,
+      "inference_ms": 4233.2
+     }
+    },
+    "cartoongan_hayao": {
+     "src": "gallery/sample_street__cartoongan_hayao.webp",
+     "thumb": "gallery/sample_street__cartoongan_hayao.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.7228,
+      "hist_shift": 0.5044,
+      "edge_density_change_pct": -13.33,
+      "inference_ms": 6498.2
+     }
+    },
+    "cartoongan_hosoda": {
+     "src": "gallery/sample_street__cartoongan_hosoda.webp",
+     "thumb": "gallery/sample_street__cartoongan_hosoda.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.7427,
+      "hist_shift": 0.2924,
+      "edge_density_change_pct": -7.0,
+      "inference_ms": 6634.5
+     }
+    },
+    "cartoongan_shinkai": {
+     "src": "gallery/sample_street__cartoongan_shinkai.webp",
+     "thumb": "gallery/sample_street__cartoongan_shinkai.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.8297,
+      "hist_shift": 0.3358,
+      "edge_density_change_pct": -22.73,
+      "inference_ms": 6260.5
+     }
+    },
+    "cartoongan_paprika": {
+     "src": "gallery/sample_street__cartoongan_paprika.webp",
+     "thumb": "gallery/sample_street__cartoongan_paprika.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.7717,
+      "hist_shift": 0.6674,
+      "edge_density_change_pct": -11.04,
+      "inference_ms": 6171.3
+     }
+    },
+    "classic_filter": {
+     "src": "gallery/sample_street__classic_filter.webp",
+     "thumb": "gallery/sample_street__classic_filter.thumb.webp",
+     "w": 896,
+     "h": 608,
+     "metrics": {
+      "ssim": 0.6808,
+      "hist_shift": 0.2724,
+      "edge_density_change_pct": 17.26,
+      "inference_ms": 226.0
+     }
+    }
+   }
+  },
+  {
+   "id": "busy_background",
+   "name": "Busy background",
+   "kind": "stress",
+   "original": {
+    "src": "gallery/busy_background__original.webp",
+    "thumb": "gallery/busy_background__original.thumb.webp",
+    "w": 992,
+    "h": 704
+   },
+   "outputs": {
+    "face_paint_v2": {
+     "src": "gallery/busy_background__face_paint_v2.webp",
+     "thumb": "gallery/busy_background__face_paint_v2.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.3834,
+      "hist_shift": 0.4776,
+      "edge_density_change_pct": -73.25,
+      "inference_ms": 12607.3
+     }
+    },
+    "face_paint_v1": {
+     "src": "gallery/busy_background__face_paint_v1.webp",
+     "thumb": "gallery/busy_background__face_paint_v1.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.3144,
+      "hist_shift": 0.6126,
+      "edge_density_change_pct": -83.51,
+      "inference_ms": 12938.9
+     }
+    },
+    "paprika": {
+     "src": "gallery/busy_background__paprika.webp",
+     "thumb": "gallery/busy_background__paprika.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.4284,
+      "hist_shift": 0.5814,
+      "edge_density_change_pct": -68.42,
+      "inference_ms": 12427.8
+     }
+    },
+    "celeba_distill": {
+     "src": "gallery/busy_background__celeba_distill.webp",
+     "thumb": "gallery/busy_background__celeba_distill.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.1924,
+      "hist_shift": 0.2525,
+      "edge_density_change_pct": -16.56,
+      "inference_ms": 14512.6
+     }
+    },
+    "hayao_v3": {
+     "src": "gallery/busy_background__hayao_v3.webp",
+     "thumb": "gallery/busy_background__hayao_v3.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.8825,
+      "hist_shift": 0.2082,
+      "edge_density_change_pct": 6.35,
+      "inference_ms": 5974.9
+     }
+    },
+    "shinkai_v3": {
+     "src": "gallery/busy_background__shinkai_v3.webp",
+     "thumb": "gallery/busy_background__shinkai_v3.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.8126,
+      "hist_shift": 0.2234,
+      "edge_density_change_pct": 18.87,
+      "inference_ms": 6367.6
+     }
+    },
+    "cartoongan_hayao": {
+     "src": "gallery/busy_background__cartoongan_hayao.webp",
+     "thumb": "gallery/busy_background__cartoongan_hayao.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.6692,
+      "hist_shift": 0.6318,
+      "edge_density_change_pct": -18.59,
+      "inference_ms": 6206.2
+     }
+    },
+    "cartoongan_hosoda": {
+     "src": "gallery/busy_background__cartoongan_hosoda.webp",
+     "thumb": "gallery/busy_background__cartoongan_hosoda.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.7242,
+      "hist_shift": 0.7517,
+      "edge_density_change_pct": -35.51,
+      "inference_ms": 10822.9
+     }
+    },
+    "cartoongan_shinkai": {
+     "src": "gallery/busy_background__cartoongan_shinkai.webp",
+     "thumb": "gallery/busy_background__cartoongan_shinkai.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.6723,
+      "hist_shift": 0.7583,
+      "edge_density_change_pct": -48.5,
+      "inference_ms": 11849.5
+     }
+    },
+    "cartoongan_paprika": {
+     "src": "gallery/busy_background__cartoongan_paprika.webp",
+     "thumb": "gallery/busy_background__cartoongan_paprika.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.6225,
+      "hist_shift": 0.4662,
+      "edge_density_change_pct": -27.44,
+      "inference_ms": 13475.1
+     }
+    },
+    "classic_filter": {
+     "src": "gallery/busy_background__classic_filter.webp",
+     "thumb": "gallery/busy_background__classic_filter.thumb.webp",
+     "w": 992,
+     "h": 704,
+     "metrics": {
+      "ssim": 0.3385,
+      "hist_shift": 0.5418,
+      "edge_density_change_pct": -19.29,
+      "inference_ms": 316.1
+     }
+    }
+   }
+  },
+  {
+   "id": "face_closeup",
+   "name": "Face close-up",
+   "kind": "stress",
+   "original": {
+    "src": "gallery/face_closeup__original.webp",
+    "thumb": "gallery/face_closeup__original.thumb.webp",
+    "w": 512,
+    "h": 512
+   },
+   "outputs": {
+    "face_paint_v2": {
+     "src": "gallery/face_closeup__face_paint_v2.webp",
+     "thumb": "gallery/face_closeup__face_paint_v2.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.7032,
+      "hist_shift": 0.3659,
+      "edge_density_change_pct": 288.62,
+      "inference_ms": 7879.3
+     }
+    },
+    "face_paint_v1": {
+     "src": "gallery/face_closeup__face_paint_v1.webp",
+     "thumb": "gallery/face_closeup__face_paint_v1.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.6041,
+      "hist_shift": 0.5136,
+      "edge_density_change_pct": 131.47,
+      "inference_ms": 10335.1
+     }
+    },
+    "paprika": {
+     "src": "gallery/face_closeup__paprika.webp",
+     "thumb": "gallery/face_closeup__paprika.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.7411,
+      "hist_shift": 0.5375,
+      "edge_density_change_pct": 211.99,
+      "inference_ms": 7286.3
+     }
+    },
+    "celeba_distill": {
+     "src": "gallery/face_closeup__celeba_distill.webp",
+     "thumb": "gallery/face_closeup__celeba_distill.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.6661,
+      "hist_shift": 0.264,
+      "edge_density_change_pct": 122.86,
+      "inference_ms": 8844.0
+     }
+    },
+    "hayao_v3": {
+     "src": "gallery/face_closeup__hayao_v3.webp",
+     "thumb": "gallery/face_closeup__hayao_v3.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.7905,
+      "hist_shift": 0.2182,
+      "edge_density_change_pct": 241.61,
+      "inference_ms": 3756.6
+     }
+    },
+    "shinkai_v3": {
+     "src": "gallery/face_closeup__shinkai_v3.webp",
+     "thumb": "gallery/face_closeup__shinkai_v3.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.8086,
+      "hist_shift": 0.1951,
+      "edge_density_change_pct": 274.56,
+      "inference_ms": 3007.3
+     }
+    },
+    "cartoongan_hayao": {
+     "src": "gallery/face_closeup__cartoongan_hayao.webp",
+     "thumb": "gallery/face_closeup__cartoongan_hayao.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.7301,
+      "hist_shift": 0.6076,
+      "edge_density_change_pct": 296.55,
+      "inference_ms": 16060.2
+     }
+    },
+    "cartoongan_hosoda": {
+     "src": "gallery/face_closeup__cartoongan_hosoda.webp",
+     "thumb": "gallery/face_closeup__cartoongan_hosoda.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.82,
+      "hist_shift": 0.5763,
+      "edge_density_change_pct": 169.81,
+      "inference_ms": 15450.8
+     }
+    },
+    "cartoongan_shinkai": {
+     "src": "gallery/face_closeup__cartoongan_shinkai.webp",
+     "thumb": "gallery/face_closeup__cartoongan_shinkai.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.8764,
+      "hist_shift": 0.2947,
+      "edge_density_change_pct": 166.77,
+      "inference_ms": 16600.2
+     }
+    },
+    "cartoongan_paprika": {
+     "src": "gallery/face_closeup__cartoongan_paprika.webp",
+     "thumb": "gallery/face_closeup__cartoongan_paprika.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.7449,
+      "hist_shift": 0.5615,
+      "edge_density_change_pct": 271.22,
+      "inference_ms": 15331.0
+     }
+    },
+    "classic_filter": {
+     "src": "gallery/face_closeup__classic_filter.webp",
+     "thumb": "gallery/face_closeup__classic_filter.thumb.webp",
+     "w": 512,
+     "h": 512,
+     "metrics": {
+      "ssim": 0.4914,
+      "hist_shift": 0.5072,
+      "edge_density_change_pct": 457.78,
+      "inference_ms": 293.6
+     }
+    }
+   }
+  }
+ ],
+ "flicker": [
+  {
+   "style": "hayao_v3",
+   "shift": 5,
+   "mean_diff": 2.46,
+   "changed_pct": 7.8,
+   "a": {
+    "src": "gallery/flicker__hayao_v3__a.webp",
+    "thumb": "gallery/flicker__hayao_v3__a.thumb.webp",
+    "w": 587,
+    "h": 400
+   },
+   "b": {
+    "src": "gallery/flicker__hayao_v3__b.webp",
+    "thumb": "gallery/flicker__hayao_v3__b.thumb.webp",
+    "w": 587,
+    "h": 400
+   },
+   "diff": {
+    "src": "gallery/flicker__hayao_v3__diff.webp",
+    "thumb": "gallery/flicker__hayao_v3__diff.thumb.webp",
+    "w": 587,
+    "h": 400
+   }
+  },
+  {
+   "style": "face_paint_v2",
+   "shift": 5,
+   "mean_diff": 2.98,
+   "changed_pct": 9.9,
+   "a": {
+    "src": "gallery/flicker__face_paint_v2__a.webp",
+    "thumb": "gallery/flicker__face_paint_v2__a.thumb.webp",
+    "w": 587,
+    "h": 400
+   },
+   "b": {
+    "src": "gallery/flicker__face_paint_v2__b.webp",
+    "thumb": "gallery/flicker__face_paint_v2__b.thumb.webp",
+    "w": 587,
+    "h": 400
+   },
+   "diff": {
+    "src": "gallery/flicker__face_paint_v2__diff.webp",
+    "thumb": "gallery/flicker__face_paint_v2__diff.thumb.webp",
+    "w": 587,
+    "h": 400
+   }
+  }
+ ],
+ "stats": {
+  "styles": 11,
+  "ai_styles": 10,
+  "avg_inference_ms": 7317,
+  "runs": 30,
+  "max_side": 1024,
+  "device": "cpu"
+ }
+}

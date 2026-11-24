@@ -3,11 +3,319 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vivid</title>
+<title>Vivid: photos into anime and cartoon art</title>
+<meta name="description" content="Photos into anime and cartoon art with pretrained GANs, compared honestly.">
+<meta name="theme-color" content="#F4F3F0">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<script>document.documentElement.classList.add("js")</script>
+<script type="module" src="js/main.js"></script>
 </head>
 <body>
-<!-- Replaced in Phase 3 -->
-<h1>Vivid</h1>
-<p>The API is running. See <a href="/docs">/docs</a>.</p>
+<a class="skip" href="#studio">Skip to the studio</a>
+
+<header class="nav" id="top">
+  <a class="nav-logo" href="#top" aria-label="Vivid, back to top">Vivid</a>
+  <button class="nav-burger" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Menu"><span></span><span></span></button>
+  <nav class="nav-menu" id="nav-menu" aria-label="Main">
+    <a href="#studio">Studio</a>
+    <a href="#styles">Styles</a>
+    <a href="#how">How it works</a>
+    <a href="#portfolio">Portfolio</a>
+    <a href="#limits">Limits</a>
+    <a class="btn btn-solid nav-cta" href="#studio">Try it</a>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" aria-label="Introduction">
+    <div class="hero-top wrap">
+      <h1 class="wordmark">Vivid</h1>
+      <p class="tagline">Photos into anime and cartoon art with pretrained GANs, compared honestly.</p>
+    </div>
+    <div class="film" id="hero-film" aria-hidden="true"></div>
+    <p class="status wrap" id="status" role="status"><span class="dot"></span><span class="status-text">Checking models…</span></p>
+  </section>
+
+  <!-- STYLES SHOWCASE -->
+  <section class="showcase dark" id="styles" aria-roledescription="carousel" aria-label="Styles" tabindex="-1">
+    <div class="showcase-stage" aria-hidden="true"></div>
+    <div class="showcase-body wrap">
+      <div class="showcase-text">
+        <p class="mono showcase-count"><span id="sc-index">01</span> / <span id="sc-total">01</span></p>
+        <div aria-live="polite">
+          <h2 class="showcase-name" id="sc-name">Styles</h2>
+          <p class="showcase-sub" id="sc-sub"></p>
+        </div>
+        <a class="showcase-try" id="sc-try" href="#studio">Try this style</a>
+      </div>
+      <div class="showcase-side">
+        <button class="btn-icon" id="sc-prev" type="button" aria-label="Previous style">←</button>
+        <button class="next-card" id="sc-next" type="button" aria-label="Next style">
+          <span class="next-label mono">Next</span>
+          <img id="sc-next-img" alt="">
+          <span class="next-name" id="sc-next-name"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="film-band" aria-hidden="true"></div>
+
+  <!-- STUDIO -->
+  <section class="studio wrap" id="studio" tabindex="-1">
+    <div class="studio-grid">
+      <div class="studio-intro reveal">
+        <h2 class="display">Make it Vivid</h2>
+        <p class="lead">Add a photo, pick a style, press Cartoonize. The models run right here, with no cloud AI service.</p>
+      </div>
+
+      <form class="studio-form reveal" id="form" novalidate>
+        <div class="field">
+          <h3 class="label" id="photo-label">Photo</h3>
+          <div class="drop" id="drop">
+            <input class="sr" type="file" id="file" accept="image/jpeg,image/png,image/webp" aria-labelledby="photo-label">
+            <label class="drop-empty" for="file">
+              <strong>Drop a photo here</strong>
+              <span>or click to choose<span class="fine">, or paste with Ctrl+V</span></span>
+              <span class="mono drop-hint">JPG / PNG / WEBP, 10 MB max</span>
+            </label>
+            <div class="drop-preview" hidden>
+              <img id="preview" alt="Your photo">
+              <label class="btn btn-line btn-small" for="file">Change photo</label>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn btn-line" type="button" id="webcam">Use webcam</button>
+            <button class="btn btn-line" type="button" id="example">Try an example</button>
+          </div>
+        </div>
+
+        <fieldset class="field">
+          <legend class="label">Style</legend>
+          <div id="style-picker"></div>
+          <p class="style-desc" id="style-desc" aria-live="polite"></p>
+        </fieldset>
+
+        <div class="field field-pair">
+          <div>
+            <label class="label" for="intensity">Intensity <output class="mono" id="intensity-out" for="intensity">100%</output></label>
+            <input class="range" type="range" id="intensity" min="0" max="100" step="5" value="100">
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="pop" role="switch">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span><span class="label">Color pop</span><small>More saturation and contrast</small></span>
+          </label>
+        </div>
+
+        <p class="error" id="error" role="alert" hidden></p>
+
+        <div class="row row-main">
+          <button class="btn btn-solid btn-big" type="submit" id="go">Cartoonize</button>
+          <button class="btn btn-line btn-big" type="button" id="compare-btn">Compare all styles</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results" id="results" hidden tabindex="-1" aria-label="Result">
+      <div class="results-head">
+        <div>
+          <p class="mono grey" id="res-family"></p>
+          <h3 class="results-name" id="res-name"></h3>
+        </div>
+        <div class="row">
+          <label class="switch" id="vs-wrap">
+            <input type="checkbox" id="vs" role="switch">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="label">AI vs Filter</span>
+          </label>
+          <button class="btn btn-line" type="button" id="download">Download PNG</button>
+        </div>
+      </div>
+      <div class="stage" id="stage"></div>
+      <dl class="metrics mono" id="metrics"></dl>
+      <div class="vs" id="vs-panel" hidden>
+        <div class="vs-pair" id="vs-pair"></div>
+        <p class="vs-note">Same photo, same settings. The GAN learned what to redraw from real cartoon images. The filter applies one fixed recipe to every pixel.</p>
+      </div>
+    </div>
+
+    <div class="compare" id="compare" hidden tabindex="-1" aria-label="Style comparison">
+      <div class="results-head">
+        <div>
+          <p class="mono grey" id="cmp-progress" role="status"></p>
+          <h3 class="results-name">Every style, one photo</h3>
+        </div>
+        <button class="btn btn-line" type="button" id="cmp-stop">Stop</button>
+      </div>
+      <div class="compare-grid" id="cmp-grid"></div>
+    </div>
+
+    <div class="history" id="history" hidden>
+      <h3 class="label">This session</h3>
+      <div class="history-strip" id="history-strip"></div>
+    </div>
+  </section>
+
+  <div class="film-band" aria-hidden="true"></div>
+
+  <!-- HOW IT WORKS -->
+  <section class="how wrap" id="how" tabindex="-1">
+    <h2 class="display reveal">How it works</h2>
+    <ol class="steps">
+      <li class="reveal"><span class="mono">01 ▸ 01A</span><h3>Upload</h3><p>Your photo is turned upright and resized to at most 1024 px. The whole frame stays in: no square crop.</p></li>
+      <li class="reveal"><span class="mono">02 ▸ 02A</span><h3>Encode</h3><p>The generator shrinks the photo step by step. It keeps what is in the picture and where, and lets go of exact pixels.</p></li>
+      <li class="reveal"><span class="mono">03 ▸ 03A</span><h3>Stylize</h3><p>The generator repaints the picture as a cartoon. During training, a discriminator kept judging: real cartoon, or generated? Each got better by trying to beat the other.</p></li>
+      <li class="reveal"><span class="mono">04 ▸ 04A</span><h3>Compare</h3><p>You see before and after, four measured numbers, and the same photo through a plain filter with no AI.</p></li>
+    </ol>
+
+    <figure class="diagram reveal">
+      <div class="diagram-scroll" tabindex="0" role="group" aria-label="Network diagram, scrollable">
+        <svg viewBox="0 -26 1240 430" role="img" aria-labelledby="dg-t dg-d">
+          <title id="dg-t">How the GAN is trained</title>
+          <desc id="dg-d">A photo enters the generator, made of an encoder, residual blocks and a decoder, which outputs a cartoon. A discriminator compares that output with real cartoon frames and edge-smoothed cartoon frames.</desc>
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#0E0E0E"/></marker>
+            <marker id="arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#E5462E"/></marker>
+          </defs>
+
+          <!-- photo -->
+          <g class="dg-box"><rect x="10" y="130" width="110" height="110"/><path d="M10 215l34-34 26 24 22-18 28 28" class="dg-thin"/><circle cx="92" cy="158" r="9" class="dg-thin"/></g>
+          <text x="65" y="264" class="dg-b">Photo</text><text x="65" y="284" class="dg-s">photo domain</text>
+          <path d="M122 185h44" class="dg-a"/>
+
+          <!-- generator -->
+          <rect x="172" y="60" width="520" height="250" class="dg-frame"/>
+          <text x="188" y="48" class="dg-h">GENERATOR</text>
+          <g class="dg-fill"><rect x="196" y="100" width="26" height="170"/><rect x="230" y="122" width="26" height="126"/><rect x="264" y="142" width="26" height="86"/></g>
+          <text x="243" y="298" class="dg-s">encoder</text>
+          <path d="M296 185h28" class="dg-a"/>
+          <g class="dg-box"><rect x="330" y="160" width="40" height="50"/><rect x="390" y="160" width="40" height="50"/><rect x="450" y="160" width="40" height="50"/><rect x="510" y="160" width="40" height="50"/></g>
+          <path d="M370 185h20M430 185h20M490 185h20" class="dg-l"/>
+          <path d="M326 160c0-34 48-34 52 0M386 160c0-34 48-34 52 0M446 160c0-34 48-34 52 0M506 160c0-34 48-34 52 0" class="dg-thin"/>
+          <text x="440" y="298" class="dg-s">residual blocks</text>
+          <path d="M552 185h22" class="dg-a"/>
+          <g class="dg-fill"><rect x="580" y="142" width="26" height="86"/><rect x="614" y="122" width="26" height="126"/><rect x="648" y="100" width="26" height="170"/></g>
+          <text x="627" y="298" class="dg-s">decoder</text>
+          <path d="M696 185h40" class="dg-a"/>
+
+          <!-- output -->
+          <g class="dg-box"><rect x="742" y="130" width="110" height="110"/><path d="M742 215l34-34 26 24 22-18 28 28" class="dg-l"/><circle cx="824" cy="158" r="9" class="dg-l"/></g>
+          <text x="797" y="264" class="dg-b">Cartoon</text><text x="797" y="284" class="dg-s">generated</text>
+          <path d="M854 185h60" class="dg-a"/>
+
+          <!-- discriminator -->
+          <path d="M920 90l150 48v94l-150 48z" class="dg-dark"/>
+          <text x="1040" y="108" class="dg-h">DISCRIMINATOR</text>
+          <text x="992" y="190" class="dg-w">D</text>
+          <path d="M1072 185h44" class="dg-a"/>
+          <text x="1180" y="180" class="dg-b">real cartoon</text><text x="1180" y="202" class="dg-b">or generated?</text>
+
+          <!-- real frames -->
+          <g class="dg-box"><rect x="872" y="340" width="130" height="54"/><rect x="1022" y="340" width="150" height="54"/></g>
+          <text x="937" y="364" class="dg-s dg-ink">real cartoon</text><text x="937" y="382" class="dg-s dg-ink">frames</text>
+          <text x="1097" y="364" class="dg-s dg-ink">cartoon frames</text><text x="1097" y="382" class="dg-s dg-ink">with blurred edges</text>
+          <path d="M945 340v-50" class="dg-a"/><path d="M1060 340c0-36-20-50-36-72" class="dg-a"/>
+
+          <!-- feedback -->
+          <path d="M958 98C940 6 520 -2 432 54" class="dg-r"/>
+          <text x="700" y="-8" class="dg-s dg-red">feedback trains the generator</text>
+        </svg>
+      </div>
+      <dl class="losses">
+        <div><dt class="red">Adversarial loss</dt><dd>Fool the discriminator, so the output looks drawn.</dd></div>
+        <div><dt>Content loss (VGG)</dt><dd>Photo and output must still show the same things in the same place.</dd></div>
+        <div><dt>Style loss</dt><dd>Textures and colours match real anime. Added by AnimeGAN.</dd></div>
+        <div><dt>Edge-promoting loss</dt><dd>Blurred edges count as fake, so lines stay crisp. From CartoonGAN.</dd></div>
+      </dl>
+      <figcaption>Training only. When you press Cartoonize, just the generator runs, once.</figcaption>
+    </figure>
+
+    <div class="unpaired reveal">
+      <p class="unpaired-flow"><span>photo domain</span><i aria-label="to and from">↔</i><span>cartoon domain</span></p>
+      <p class="lead">No one has drawn the cartoon twin of every photo. So the network learns from two separate piles: real photos and real cartoon frames, with no matching pairs. This is <strong>unpaired image-to-image translation</strong>, the same family as CycleGAN.</p>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats dark" aria-label="Numbers">
+    <dl class="wrap">
+      <div><dt>styles online</dt><dd id="st-styles">–</dd></div>
+      <div><dt id="st-ms-label">average time per AI style, laptop CPU</dt><dd id="st-ms">–</dd></div>
+      <div><dt>maximum resolution, long side</dt><dd id="st-res">–</dd></div>
+      <div><dt>paired training images needed</dt><dd>0</dd></div>
+    </dl>
+  </section>
+
+  <!-- PORTFOLIO -->
+  <section class="portfolio wrap" id="portfolio" tabindex="-1">
+    <div class="section-head reveal">
+      <h2 class="display">Portfolio</h2>
+      <div class="tabs" id="pf-tabs" role="group" aria-label="Choose a photo"></div>
+    </div>
+    <div class="pf-grid" id="pf-grid"></div>
+  </section>
+
+  <!-- LIMITS -->
+  <section class="limits dark" id="limits" tabindex="-1">
+    <div class="wrap">
+      <h2 class="display reveal">Limits</h2>
+      <div class="limit-list" id="limit-list"></div>
+    </div>
+  </section>
+
+  <!-- Q&A -->
+  <section class="qa wrap" id="qa" tabindex="-1">
+    <h2 class="display reveal">Jury Q&amp;A</h2>
+    <div class="qa-grid">
+      <article class="reveal">
+        <h3>How is this different from a photo filter?</h3>
+        <p>A filter applies one fixed recipe to every pixel of every photo. The GAN learned what to do: it treats sky, skin and hard edges differently because it responds to what is in the picture.</p>
+        <p>The filter has one advantage. It is predictable and never bends a face.</p>
+        <a class="btn btn-solid" href="#studio" data-demo="vs">See AI vs Filter live</a>
+      </article>
+      <article class="reveal">
+        <h3>Where does it break down?</h3>
+        <p>Faces can crack or go waxy, fine detail gets smeared into blotches, and video would flicker because every frame is drawn from scratch.</p>
+        <p>We show these failures on purpose, using the same models you can run above.</p>
+        <a class="btn btn-line" href="#limits">See the failure cases</a>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer class="footer dark">
+  <div class="wrap">
+    <p class="footer-mark">Vivid</p>
+    <p class="mono">Topic 128. Cartoonize photos with AnimeGAN / CartoonGAN.</p>
+    <p class="mono">Pretrained models by their authors, some for non-commercial use only.</p>
+  </div>
+</footer>
+
+<dialog class="modal" id="cam-modal" aria-label="Webcam">
+  <div class="cam">
+    <video id="cam-video" playsinline muted></video>
+    <p class="error" id="cam-error" role="alert" hidden></p>
+    <div class="row">
+      <button class="btn btn-solid" type="button" id="cam-shoot" disabled>Take photo</button>
+      <button class="btn btn-line" type="button" id="cam-close">Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal modal-wide" id="lightbox" aria-labelledby="lb-name">
+  <div class="lb-head">
+    <div><p class="mono grey" id="lb-family"></p><h3 class="results-name" id="lb-name"></h3></div>
+    <button class="btn btn-line" type="button" id="lb-close">Close</button>
+  </div>
+  <div id="lb-stage"></div>
+  <dl class="metrics mono" id="lb-metrics"></dl>
+</dialog>
+
+<noscript><p class="wrap">Vivid needs JavaScript to run.</p></noscript>
 </body>
 </html>

@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import io
 import logging
+import mimetypes
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -26,6 +27,11 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from registry import FILTER_STYLE, MAX_SIDE, STYLES, Registry, Result, preprocess
 
 log = logging.getLogger("vivid.server")
+
+# Windows can report blank or wrong types for these (it reads them from the registry), and browsers
+# refuse to run a module script that isn't served as JavaScript.
+for ext, mime in ((".js", "text/javascript"), (".css", "text/css"), (".webp", "image/webp"), (".woff2", "font/woff2")):
+    mimetypes.add_type(mime, ext)
 
 ROOT = Path(__file__).parent
 FRONTEND_DIR = ROOT / "frontend"

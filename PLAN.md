@@ -19,7 +19,7 @@ The design spec lives in [DESIGN.md](DESIGN.md).
 - [x] Phase 0: Repo cleanup
 - [x] Phase 1: Model registry
 - [x] Phase 2: API
-- [ ] Phase 3: Frontend
+- [x] Phase 3: Frontend
 - [ ] Phase 4: Jury content
 - [ ] Final pass: test every style via the UI, screenshots, summary
 
@@ -133,3 +133,23 @@ All 11 styles load and pass tests: 4 AnimeGANv2, 2 AnimeGANv3, 4 CartoonGAN, 1 c
   when the client disconnects. For Phase 3, call /api/cartoonize once per style with max_side=512
   so the grid fills in as results arrive instead of showing nothing for 50 s.
 - One inference runs at a time, so a request made during a compare waits for the current style.
+
+### Phase 3 (done)
+
+- frontend/: plain HTML, CSS and ES modules, no build step. Fonts are self-hosted (Anton, Inter
+  Tight, JetBrains Mono, all SIL OFL), so the site needs no internet.
+- tools/build_showcase.py generates frontend/gallery/ (real outputs, metrics, flicker test). Run it
+  with nothing else busy: its timings feed the stats band (7.3 s average over 30 runs here).
+- Checked in headless Chrome: every control, error paths, 320 / 390 / 820 / 1366 / 1920 px wide,
+  reduced motion. Webcam was tested with Chrome's fake camera only.
+- Deviations from DESIGN.md: small secondary text uses #6b6b6b on paper, because #8A8A8A is too
+  faint there (about 3:1); #8A8A8A stays for frame and family labels. At 1366x768 the status line
+  sits just below the fold.
+- The compare grid calls /api/cartoonize per style, so frames appear as they finish; the UI does
+  not use /api/compare.
+- Portfolio, Limits and Q&A exist with real images and short copy. Phase 4 still owes the averaged
+  metrics table, the full commentary and the README.
+- For Phase 4: README credits the edge-promoting loss to AnimeGAN, but CartoonGAN introduced it.
+  The site already says CartoonGAN. The style loss is AnimeGAN's addition.
+- Edge change can look extreme on smooth photos (Hayao on the portrait: +1206%) because the original
+  has almost no edges. Worth a sentence in the commentary.

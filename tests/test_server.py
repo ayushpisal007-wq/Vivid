@@ -79,6 +79,24 @@ def test_frontend_is_served(client):
     assert r.status_code == 200 and "Vivid" in r.text
 
 
+@pytest.mark.parametrize(
+    "path, mime",
+    [("js/main.js", "text/javascript"), ("css/style.css", "text/css"), ("fonts/anton.woff2", "font/woff2"),
+     ("gallery/sample_portrait__hayao_v3.webp", "image/webp"), ("favicon.svg", "image/svg+xml")],
+)
+def test_static_files_have_the_right_type(client, path, mime):
+    r = client.get(f"/{path}")
+    assert r.status_code == 200 and r.headers["content-type"].startswith(mime)
+
+
+def test_gallery_is_complete(client):
+    data = client.get("/gallery/showcase.json").json()
+    assert [s["id"] for s in data["styles"]] == [s["id"] for s in client.get("/api/styles").json()]
+    for photo in data["photos"]:
+        for image in [photo["original"], *photo["outputs"].values()]:
+            assert (server.FRONTEND_DIR / image["src"]).is_file() and (server.FRONTEND_DIR / image["thumb"]).is_file()
+
+
 def test_static_mount_does_not_leak_source(client):
     for path in ("/server.py", "/examples/../server.py", "/examples/%2e%2e/server.py", "/.git/config"):
         assert client.get(path).status_code == 404
