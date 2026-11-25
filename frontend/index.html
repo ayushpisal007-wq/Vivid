@@ -69,7 +69,7 @@
     <div class="studio-grid">
       <div class="studio-intro reveal">
         <h2 class="display">Make it Vivid</h2>
-        <p class="lead">Add a photo, pick a style, press Cartoonize. The models run right here, with no cloud AI service.</p>
+        <p class="lead">Add a photo, pick a style, press Cartoonize. Our own server runs the models, with no outside AI service.</p>
       </div>
 
       <form class="studio-form reveal" id="form" novalidate>
@@ -97,6 +97,7 @@
           <legend class="label">Style</legend>
           <div id="style-picker"></div>
           <p class="style-desc" id="style-desc" aria-live="polite"></p>
+          <p class="style-limit" id="style-limit" hidden></p>
         </fieldset>
 
         <div class="field field-pair">
@@ -244,7 +245,7 @@
   <!-- STATS -->
   <section class="stats dark" aria-label="Numbers">
     <dl class="wrap">
-      <div><dt>styles online</dt><dd id="st-styles">–</dd></div>
+      <div><dt>styles</dt><dd id="st-styles">–</dd></div>
       <div><dt id="st-ms-label">average time per AI style, laptop CPU</dt><dd id="st-ms">–</dd></div>
       <div><dt>maximum resolution, long side</dt><dd id="st-res">–</dd></div>
       <div><dt>paired training images needed</dt><dd>0</dd></div>

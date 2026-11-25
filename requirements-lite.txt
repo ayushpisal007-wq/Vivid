@@ -1,0 +1,11 @@
+# Lite server: AnimeGANv3 (ONNX) and the classic filter, without PyTorch. Fits in 512 MB.
+numpy==1.26.4
+Pillow==10.4.0
+opencv-python-headless==4.10.0.84
+scikit-image==0.24.0
+onnxruntime==1.31.1
+fastapi==0.112.2
+starlette==0.38.6
+pydantic==2.8.2
+uvicorn==0.54.0
+python-multipart==0.0.34

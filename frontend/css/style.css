@@ -161,6 +161,9 @@ legend.label { float: left; width: 100%; } legend + * { clear: both; }
 .pill input:checked + span { background: var(--ink); border-color: var(--ink); color: #fff; }
 .pill input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
 .style-desc { margin-top: 16px; min-height: 1.5em; }
+.style-limit { margin-top: 8px; color: #6b6b6b; font-size: .9em; }
+.pill input:disabled { cursor: not-allowed; }
+.pill input:disabled + span { opacity: .38; border-style: dashed; }
 
 .field-pair { display: grid; grid-template-columns: 1fr auto; gap: 24px clamp(24px, 4vw, 64px); align-items: center; border-bottom: 1px solid var(--line); }
 .field-pair output { float: right; font-weight: 500; }

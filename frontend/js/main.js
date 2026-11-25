@@ -4,6 +4,7 @@ import { heroFilm, filmBands } from "./film.js";
 import { showcase } from "./showcase.js";
 import { portfolio, limits, stats } from "./gallery.js";
 import { studio } from "./studio.js";
+import { REMOTE } from "./config.js";
 
 /* ---------- nav ---------- */
 const burger = document.querySelector(".nav-burger");
@@ -36,20 +37,33 @@ const spy = new IntersectionObserver((entries) => {
 links.forEach((a) => spy.observe(document.querySelector(a.hash)));
 
 /* ---------- live status ---------- */
-async function health() {
-  const box = $("status");
-  const text = box.querySelector(".status-text");
-  const set = (on, message) => {
-    box.classList.toggle("on", on);
-    if (text.textContent !== message) text.textContent = message;
-  };
+let app = null;
+let known = false; // have we learned which styles this server runs?
+let checking = false;
+const box = $("status");
+const statusText = box.querySelector(".status-text");
+function setStatus(on, message) {
+  box.classList.toggle("on", on);
+  if (statusText.textContent !== message) statusText.textContent = message;
+}
+
+async function checkServer() {
+  if (checking) return; // a sleeping free server can take a minute to answer
+  checking = true;
+  const waking = REMOTE && !known && setTimeout(() => setStatus(false, "Waking the models up, about a minute…"), 2500);
   try {
     const h = await getJSON("/api/health");
-    set(true, `Models online · ${h.styles} styles`);
-    return h;
+    setStatus(true, `Models online · ${h.styles === h.total_styles ? "" : `${h.styles} of `}${h.total_styles} styles`);
+    if (!known) {
+      const styles = await getJSON("/api/styles");
+      app.setAvailable(styles.map((s) => s.id));
+      known = true;
+    }
   } catch {
-    set(false, "Models offline");
-    return null;
+    setStatus(false, "Models offline");
+  } finally {
+    clearTimeout(waking);
+    checking = false;
   }
 }
 
@@ -57,22 +71,19 @@ async function health() {
 reveal(...document.querySelectorAll(".reveal"));
 filmBands();
 
-const [data, h, styles] = await Promise.all([
-  getJSON("gallery/showcase.json").catch(() => null),
-  health(),
-  getJSON("/api/styles").catch(() => null),
-]);
-
-const app = studio(styles ?? data?.styles ?? [], data);
+// The page itself never waits for the models.
+const data = await getJSON("gallery/showcase.json").catch(() => null);
+app = studio(data?.styles ?? (await getJSON("/api/styles").catch(() => [])), data);
 if (data) {
   heroFilm($("hero-film"), data);
   showcase(data, app.selectStyle);
   portfolio(data);
   limits(data);
-  stats(data, h);
+  stats(data);
 }
 document.querySelector("[data-demo=vs]").addEventListener("click", (e) => {
   e.preventDefault();
   app.demoVsFilter();
 });
-setInterval(health, 30000);
+checkServer();
+setInterval(checkServer, 30000);

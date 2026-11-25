@@ -1,3 +1,5 @@
+import { API } from "./config.js";
+
 async function request(url, options) {
   let response;
   try {
@@ -17,7 +19,7 @@ async function request(url, options) {
   return body;
 }
 
-export const getJSON = (url) => request(url);
+export const getJSON = (url) => request(url.startsWith("/api/") ? API + url : url);
 
 export function cartoonize(file, { style, intensity = 100, pop = false, maxSide, signal }) {
   const form = new FormData();
@@ -26,11 +28,11 @@ export function cartoonize(file, { style, intensity = 100, pop = false, maxSide,
   form.append("intensity", intensity);
   form.append("color_pop", pop);
   if (maxSide) form.append("max_side", maxSide);
-  return request("/api/cartoonize", { method: "POST", body: form, signal });
+  return request(`${API}/api/cartoonize`, { method: "POST", body: form, signal });
 }
 
 export async function fetchExample(example) {
-  const response = await fetch(example.url).catch(() => null);
+  const response = await fetch(API + example.url).catch(() => null);
   if (!response?.ok) throw new Error("That example couldn't be loaded.");
   const blob = await response.blob();
   return new File([blob], example.url.split("/").pop(), { type: blob.type || "image/jpeg" });

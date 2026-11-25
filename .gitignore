@@ -26,3 +26,6 @@ weights/
 
 # downloaded helper programs (cloudflared)
 tools/bin/
+
+# vercel cli
+.vercel/

@@ -1,0 +1,28 @@
+# Render Blueprint: the Vivid API on the free plan, in lite mode.
+# The full 11 styles need about 2 GB of memory; the free plan has 512 MB.
+services:
+  - type: web
+    name: vivid-gan-api
+    runtime: python
+    plan: free
+    branch: main
+    buildCommand: pip install -r requirements-lite.txt && python tools/download_weights.py
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: VIVID_STYLES
+        value: hayao_v3,shinkai_v3,classic_filter
+      - key: VIVID_MAX_SIDE
+        value: "512"
+      - key: VIVID_MAX_PIXELS
+        value: "25000000"
+      - key: VIVID_CORS_ORIGINS
+        value: "*"
+      - key: CPU_CORES
+        value: "1"
+      - key: MALLOC_ARENA_MAX
+        value: "2"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"

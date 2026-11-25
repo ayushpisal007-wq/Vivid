@@ -1,5 +1,6 @@
 import { $, el, pad, FILTER, beforeAfter, renderMetrics, scrollToEl, seconds, signed, skeleton } from "./util.js";
 import { cartoonize, fetchExample, getJSON } from "./api.js";
+import { REMOTE } from "./config.js";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -18,6 +19,7 @@ export function studio(styles, showcaseData) {
   let retune = 0; // debounce timer
   let vsToken = 0;
   let examples = null, exampleIndex = 0;
+  let available = new Set(styles.map((s) => s.id));
 
   const byId = (id) => styles.find((s) => s.id === id);
   const style = () => $("style-picker").querySelector("input:checked")?.value;
@@ -48,8 +50,23 @@ export function studio(styles, showcaseData) {
   }
   function selectStyle(id) {
     const input = $("style-picker").querySelector(`input[value="${CSS.escape(id)}"]`);
-    if (input) input.checked = true;
+    if (input && !input.disabled) input.checked = true;
     describe();
+  }
+  /** Grey out styles this server doesn't run. Their results are still in the Portfolio. */
+  function setAvailable(ids) {
+    available = new Set(ids);
+    for (const input of $("style-picker").querySelectorAll("input")) {
+      input.disabled = !available.has(input.value);
+      input.parentElement.title = input.disabled ? "Runs in the full version" : "";
+      if (input.disabled && input.checked) input.checked = false;
+    }
+    if (!style()) selectStyle(available.has(DEFAULT_STYLE) ? DEFAULT_STYLE : ids[0]);
+    const limited = available.size < styles.length;
+    $("style-limit").hidden = !limited;
+    $("style-limit").textContent = limited
+      ? `This small server runs ${available.size} of ${styles.length} styles. The rest need more memory: see their results in the Portfolio, or run the full version locally.`
+      : "";
   }
   selectStyle(byId(DEFAULT_STYLE) ? DEFAULT_STYLE : styles[0]?.id ?? "");
   if (!styles.length) for (const id of ["go", "compare-btn", "example"]) $(id).disabled = true;
@@ -157,7 +174,7 @@ export function studio(styles, showcaseData) {
   /* ---------- cartoonize ---------- */
   function estimate(id) {
     // The timings were measured on the laptop, so only quote them there.
-    if (!["localhost", "127.0.0.1"].includes(location.hostname)) return "";
+    if (!["localhost", "127.0.0.1"].includes(location.hostname)) return REMOTE ? "small free server, this can take a minute or two" : "";
     const runs = showcaseData?.photos
       .filter((p) => p.kind === "example" && p.outputs[id])
       .map((p) => p.outputs[id].metrics.inference_ms) ?? [];
@@ -341,7 +358,7 @@ export function studio(styles, showcaseData) {
     const used = photo;
     const opts = options();
     // One request per style, so frames appear as they finish. The instant filter goes first.
-    const order = [...styles].sort((a, b) => (b.id === FILTER) - (a.id === FILTER));
+    const order = styles.filter((s) => available.has(s.id)).sort((a, b) => (b.id === FILTER) - (a.id === FILTER));
     const cards = new Map(order.map((s) => [s.id, card(s)]));
     $("results").hidden = true;
     $("compare").hidden = false;
@@ -453,5 +470,5 @@ export function studio(styles, showcaseData) {
     }
   }
 
-  return { selectStyle, demoVsFilter };
+  return { selectStyle, setAvailable, demoVsFilter };
 }

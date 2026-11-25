@@ -9,8 +9,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
-import torch
 from PIL import Image
+
+try:
+    import torch
+except ImportError:  # lite deployments run only the ONNX styles and the filter
+    torch = None
 
 # No tagged releases on the upstream repo, so we pin to a branch ref.
 # torch.hub caches the checkout under ~/.cache/torch/hub after first use.
@@ -37,6 +41,8 @@ MODEL_VARIANTS = {
 
 
 def get_device(requested: str = "auto") -> torch.device:
+    if torch is None:
+        return "cpu"
     if requested != "auto":
         return torch.device(requested)
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -60,9 +66,9 @@ class CartoonModel:
             HUB_REPO, "face2paint", size=size, device=str(device), trust_repo=True
         )
 
-    @torch.inference_mode()
     def run(self, image: Image.Image) -> Image.Image:
-        return self.face2paint(self.generator, image)
+        with torch.inference_mode():
+            return self.face2paint(self.generator, image)
 
 
 def load_models(names: list[str], device: torch.device, size: int = 512) -> dict[str, CartoonModel]:
@@ -71,7 +77,7 @@ def load_models(names: list[str], device: torch.device, size: int = 512) -> dict
 
 # AnimeGANv3 film-style checkpoints (the real "Hayao"/"Shinkai" styles), published by the
 # original author as ONNX files only -- kept separate from MODEL_VARIANTS so the batch
-# scripts (cartoonize.py, compare.py, ...) are unaffected. Used by app.py.
+# scripts (cartoonize.py, compare.py, ...) are unaffected. Used by registry.py.
 ONNX_RELEASE = "https://github.com/TachibanaYoshino/AnimeGANv3/releases/download/v1.1.0"
 ONNX_VARIANTS = {
     "hayao_v3": ("AnimeGANv3_Hayao_36.onnx", "Miyazaki/Ghibli-inspired film look, bold lines and painted skies"),
@@ -94,6 +100,8 @@ class OnnxCartoonModel:
             torch.hub.download_url_to_file(f"{ONNX_RELEASE}/{filename}", str(path))
         options = ort.SessionOptions()
         options.intra_op_num_threads = threads
+        if threads == 1:  # a tiny server: give memory back after each photo instead of keeping it
+            options.enable_cpu_mem_arena = False
         self.session = ort.InferenceSession(str(path), options, providers=["CPUExecutionProvider"])
         self.input_name = self.session.get_inputs()[0].name
 

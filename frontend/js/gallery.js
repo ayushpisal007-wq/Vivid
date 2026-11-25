@@ -136,9 +136,9 @@ export function limits(data) {
   }
 }
 
-export function stats(data, health) {
-  $("st-styles").textContent = health?.styles ?? data.stats.styles;
+export function stats(data) {
+  $("st-styles").textContent = data.stats.styles;
   const [n, unit] = seconds(data.stats.avg_inference_ms).split(" ");
   $("st-ms").replaceChildren(n, el("small", {}, unit));
-  $("st-res").replaceChildren(String(health?.max_side ?? data.stats.max_side), el("small", {}, "px"));
+  $("st-res").replaceChildren(String(data.stats.max_side), el("small", {}, "px"));
 }

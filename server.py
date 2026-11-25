@@ -18,6 +18,7 @@ from pathlib import Path
 import anyio
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
@@ -40,9 +41,13 @@ EXAMPLE_NAMES = {"sample_portrait": "Portrait", "sample_landscape": "Fjord", "sa
 
 MAX_UPLOAD = 10 * 1024 * 1024
 MULTIPART_OVERHEAD = 64 * 1024  # form fields and boundaries around the file itself
-MAX_PIXELS = 50_000_000         # a small file can still decode to a huge bitmap
+MAX_PIXELS = int(os.environ.get("VIVID_MAX_PIXELS", "50000000"))  # a small file can still decode to a huge bitmap
 ALLOWED_FORMATS = ("JPEG", "PNG", "WEBP")
-COMPARE_SIDE = 512              # all styles at full size would take over a minute on a laptop CPU
+# Comma-separated style ids for servers too small for every model; empty means all of them.
+STYLE_LIMIT = [s.strip() for s in os.environ.get("VIVID_STYLES", "").split(",") if s.strip()] or None
+# Websites allowed to call this API from another address, e.g. the frontend on Vercel. Empty means none.
+CORS_ORIGINS = [o.strip() for o in os.environ.get("VIVID_CORS_ORIGINS", "").split(",") if o.strip()]
+COMPARE_SIDE = min(512, MAX_SIDE)  # all styles at full size would take over a minute on a laptop CPU
 
 TOO_BIG = "That photo is larger than 10 MB. Please choose a smaller one."
 BAD_TYPE = "Please upload a JPG, PNG or WebP photo. Other formats, such as HEIC or GIF, aren't supported."
@@ -51,8 +56,8 @@ BAD_IMAGE = "That file couldn't be read as an image. It may be damaged; please t
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Loading models (first run downloads about 220 MB of weights)...", flush=True)
-    app.state.registry = await anyio.to_thread.run_sync(Registry)
+    print("Loading models (the first run downloads their weights)...", flush=True)
+    app.state.registry = await anyio.to_thread.run_sync(lambda: Registry(only=STYLE_LIMIT))
     # Separate, small thread budget: queued inference can't starve the rest of the server.
     app.state.limiter = anyio.CapacityLimiter(2)
     print(f"Ready: {len(app.state.registry.styles)} styles online.", flush=True)
@@ -88,7 +93,9 @@ async def on_invalid_request(request: Request, exc: RequestValidationError):
 @app.exception_handler(Exception)
 async def on_crash(request: Request, exc: Exception):
     log.exception("Unhandled error on %s", request.url.path)
-    return JSONResponse({"detail": "Something went wrong on our side. Please try again."}, 500)
+    # Crashes are answered outside the CORS layer, so a page on another address needs the header added here.
+    headers = {"Access-Control-Allow-Origin": "*"} if CORS_ORIGINS else None
+    return JSONResponse({"detail": "Something went wrong on our side. Please try again."}, 500, headers=headers)
 
 
 class BodyTooLarge(Exception):
@@ -140,6 +147,8 @@ class RejectOversizedUploads:
 
 
 app.add_middleware(RejectOversizedUploads)
+if CORS_ORIGINS:  # added last, so it wraps everything and error answers stay readable across sites
+    app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_methods=["GET", "POST"], max_age=86400)
 
 
 # ---------------------------------------------------------------- helpers
@@ -159,6 +168,8 @@ def decode(data: bytes) -> Image.Image:
     if image.width * image.height > MAX_PIXELS:
         raise HTTPException(413, "That photo has too many pixels. Please resize it and try again.")
     try:
+        if image.format in ("JPEG", "MPO"):  # decode huge photos at reduced size; never below twice what we need
+            image.draft("RGB", (2 * MAX_SIDE, 2 * MAX_SIDE))
         image.load()
     except Exception:
         raise HTTPException(400, BAD_IMAGE)

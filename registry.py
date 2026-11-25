@@ -16,21 +16,25 @@ import threading
 import time
 from collections import OrderedDict
 from collections.abc import Callable
+from contextlib import nullcontext
 from dataclasses import dataclass
 
 import numpy as np
-import torch
 from PIL import Image, ImageEnhance, ImageOps
 
 import metrics
-from cartoongan import load_cartoongan
 from classic_filter import classic_cartoon
 from models import HUB_REPO, ONNX_VARIANTS, OnnxCartoonModel, get_device
 from weight_store import ensure
 
+try:
+    import torch
+except ImportError:  # lite deployments run only the ONNX styles and the filter
+    torch = None
+
 log = logging.getLogger("vivid.registry")
 
-MAX_SIDE = 1024  # cap for CPU speed
+MAX_SIDE = int(os.environ.get("VIVID_MAX_SIDE", "1024"))  # cap for CPU speed
 MIN_SIDE = 512   # these networks see almost nothing in tiny inputs, so upscale the long side to this
 CARTOONGAN_SIDE = 512  # upstream runs it at ~450px; at 896px it is ~3x slower
 MULTIPLE = 32
@@ -51,6 +55,10 @@ def cpu_budget() -> int:
         pass  # not Linux, or no limit set
     cores = os.environ.get("CPU_CORES", "")  # set by Hugging Face Spaces
     return min(count, max(1, int(cores))) if cores.isdigit() else count
+
+
+def no_grad():
+    return torch.inference_mode() if torch else nullcontext()
 
 
 # ---------------------------------------------------------------- loaders
@@ -89,6 +97,8 @@ def _animegan3(name: str) -> Callable[[torch.device], Runner]:
 
 def _cartoongan(filename: str) -> Callable[[torch.device], Runner]:
     def load(device):
+        from cartoongan import load_cartoongan
+
         net = load_cartoongan(ensure(filename), device).to(memory_format=torch.channels_last)
         # The released weights expect BGR channel order.
         return lambda image: _to_image(net(_to_tensor(image, device).flip(1)).flip(1))
@@ -185,7 +195,8 @@ class Registry:
         if unknown:
             raise ValueError(f"Unknown styles: {', '.join(sorted(unknown))}")
         self.device = get_device(device)
-        torch.set_num_threads(cpu_budget())  # hyperthreads + channels_last: ~20% faster on CPU here
+        if torch:
+            torch.set_num_threads(cpu_budget())  # hyperthreads + channels_last: ~20% faster on CPU here
         self.styles: dict[str, Style] = {}
         self.unavailable: dict[str, str] = {}
         self._runners: dict[str, Runner] = {}
@@ -199,7 +210,7 @@ class Registry:
         try:
             runner = style.load(self.device)
             probe = Image.effect_noise((64, 96), 60).convert("RGB")
-            with torch.inference_mode():
+            with no_grad():
                 out = runner(probe)
             if out.size != probe.size or np.asarray(out).std() < 1:
                 raise RuntimeError(f"smoke test produced a bad image ({out.size})")
@@ -215,7 +226,7 @@ class Registry:
         if style not in self._runners:
             raise KeyError(f"Unknown style '{style}'")
         key = (style, image.size, hashlib.sha256(image.tobytes()).digest())
-        with self._lock, torch.inference_mode():
+        with self._lock, no_grad():
             if key in self._cache:
                 self._cache.move_to_end(key)
                 return *self._cache[key], True
